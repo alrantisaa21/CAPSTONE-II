@@ -1049,23 +1049,6 @@ tbody td {
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
-// ── KONFIGURASI SUPABASE ──
-const SUPA_URL = 'https://dajdegksemjcammjbjkw.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhamRlZ2tzZW1qY2FtbWpiamt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDMyODAsImV4cCI6MjA5MzMxOTI4MH0.q8ukFBXlkHEU8-Jpe3wZChqfMtsaba7-3h6o8_iKnyU';
-
-async function supaQuery(method, table, body = null, filter = '') {
-  const res = await fetch(`${SUPA_URL}/rest/v1/${table}${filter}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPA_KEY,
-      'Authorization': `Bearer ${SUPA_KEY}`,
-      'Prefer': method === 'POST' ? 'return=representation' : ''
-    },
-    body: body ? JSON.stringify(body) : null
-  });
-  return res.ok ? res.json() : null;
-}
 <script>
 // ═══════════════════════════════════════════════════
 //  PAKO IC MONITORING DASHBOARD
