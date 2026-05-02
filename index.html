@@ -1049,7 +1049,23 @@ tbody td {
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+// ── KONFIGURASI SUPABASE ──
+const SUPA_URL = 'https://dajdegksemjcammjbjkw.supabase.co/rest/v1/';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhamRlZ2tzZW1qY2FtbWpiamt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDMyODAsImV4cCI6MjA5MzMxOTI4MH0.q8ukFBXlkHEU8-Jpe3wZChqfMtsaba7-3h6o8_iKnyU';
 
+async function supaQuery(method, table, body = null, filter = '') {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${table}${filter}`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPA_KEY,
+      'Authorization': `Bearer ${SUPA_KEY}`,
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+  return res.ok ? res.json() : null;
+}
 <script>
 // ═══════════════════════════════════════════════════
 //  PAKO IC MONITORING DASHBOARD
@@ -1131,30 +1147,22 @@ async function doRegister() {
   const r = document.getElementById('regRole').value;
   const msgEl = document.getElementById('registerMsg');
 
-  if (!u || !p) { showMsg(msgEl, 'error', 'Isi semua field!'); return; }
-  if (u.length < 3) { showMsg(msgEl, 'error', 'Username minimal 3 karakter!'); return; }
-  if (p.length < 6) { showMsg(msgEl, 'error', 'Password minimal 6 karakter!'); return; }
-
-  document.getElementById('regBtn').textContent = 'Mendaftar...';
-  document.getElementById('regBtn').disabled = true;
-
-  const users = getStore('users') || [];
-  if (users.find(x => x.u === u)) {
-    showMsg(msgEl, 'error', 'Username sudah digunakan!');
-    document.getElementById('regBtn').textContent = 'Daftar';
-    document.getElementById('regBtn').disabled = false;
-    return;
-  }
+  if (!u || p.length < 6) { showMsg(msgEl, 'error', 'Isi semua field dengan benar!'); return; }
 
   const hash = await sha256(p);
-  users.push({ u, h: hash, r, ts: Date.now() });
-  setStore('users', users);
 
-  showMsg(msgEl, 'success', 'Akun berhasil dibuat! Silakan login.');
-  document.getElementById('regBtn').textContent = 'Daftar';
-  document.getElementById('regBtn').disabled = false;
-  document.getElementById('regUser').value = '';
-  document.getElementById('regPass').value = '';
+  // Cek apakah username sudah ada
+  const existing = await supaQuery('GET', 'users', null, `?username=eq.${u}`);
+  if (existing && existing.length > 0) {
+    showMsg(msgEl, 'error', 'Username sudah digunakan!'); return;
+  }
+
+  const result = await supaQuery('POST', 'users', { username: u, password_hash: hash, role: r });
+  if (result) {
+    showMsg(msgEl, 'success', 'Akun berhasil dibuat! Silakan login.');
+  } else {
+    showMsg(msgEl, 'error', 'Gagal mendaftar. Coba lagi.');
+  }
 }
 
 async function doLogin() {
@@ -1164,33 +1172,17 @@ async function doLogin() {
 
   if (!u || !p) { showMsg(msgEl, 'error', 'Isi username dan password!'); return; }
 
-  document.getElementById('loginBtn').textContent = 'Memeriksa...';
-  document.getElementById('loginBtn').disabled = true;
-
-  const users = getStore('users') || [];
-
-  // Tambahkan default admin jika belum ada
-  if (users.length === 0) {
-    const hash = await sha256('admin123');
-    users.push({ u: 'admin', h: hash, r: 'supervisor', ts: Date.now() });
-    setStore('users', users);
-  }
-
   const hash = await sha256(p);
-  const user = users.find(x => x.u === u && x.h === hash);
+  const users = await supaQuery('GET', 'users', null, `?username=eq.${u}&password_hash=eq.${hash}`);
 
-  if (!user) {
-    showMsg(msgEl, 'error', 'Username atau password salah!');
-    document.getElementById('loginBtn').textContent = 'Sign In';
-    document.getElementById('loginBtn').disabled = false;
-    return;
+  if (!users || users.length === 0) {
+    showMsg(msgEl, 'error', 'Username atau password salah!'); return;
   }
 
-  // Simpan session (expire 8 jam)
-  const session = { u: user.u, r: user.r, exp: Date.now() + 8*60*60*1000 };
+  const user = users[0];
+  const session = { u: user.username, r: user.role, exp: Date.now() + 8*60*60*1000 };
   sessionStorage.setItem('pako_session', encodeData(session));
-
-  currentUser = user;
+  currentUser = { u: user.username, r: user.role };
   initApp();
 }
 
