@@ -970,6 +970,15 @@ async function doRegister() {
   }
 }
 
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
 function switchAuthTab(tab) {
   var isLogin = tab === 'login';
   document.getElementById('tab-login-btn').classList.toggle('active', isLogin);
@@ -978,7 +987,121 @@ function switchAuthTab(tab) {
   document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
 }
 
+async function doLogin() {
+  console.log('Login function called');
+  var u = document.getElementById('login-user').value.trim();
+  var p = document.getElementById('login-pass').value;
+  var msgEl = document.getElementById('login-msg');
+  
+  if (!u || !p) {
+    msgEl.textContent = 'Username dan password harus diisi!';
+    return;
+  }
+  
+  try {
+    var hashedPass = await hashPassword(p);
+    console.log('Trying to login with:', u);
+    
+    var { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', u)
+      .eq('password', hashedPass);
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      // Fallback ke localStorage
+      var users = getUsers();
+      var found = null;
+      for (var i = 0; i < users.length; i++) {
+        if (users[i].username === u && users[i].password === p) { 
+          found = users[i]; 
+          break; 
+        }
+      }
+      if (found) {
+        currentUser = found;
+        msgEl.textContent = '';
+        launchApp();
+        return;
+      }
+      msgEl.textContent = 'Username atau password salah.';
+      return;
+    }
+    
+    currentUser = data[0];
+    msgEl.textContent = '';
+    launchApp();
+  } catch (error) {
+    console.error('Login error:', error);
+    msgEl.textContent = 'Error: ' + error.message;
+  }
+}
+
+async function doRegister() {
+  console.log('Register function called');
+  var u = document.getElementById('reg-user').value.trim();
+  var p = document.getElementById('reg-pass').value;
+  var r = document.getElementById('reg-role').value;
+  var msgEl = document.getElementById('reg-msg');
+  
+  if (!u || p.length < 6) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
+    return;
+  }
+  
+  try {
+    var hashedPass = await hashPassword(p);
+    
+    // Cek username sudah ada
+    var { data: existing } = await supabase
+      .from('users')
+      .select('username')
+      .eq('username', u);
+    
+    if (existing && existing.length > 0) {
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = 'Username sudah terdaftar.';
+      return;
+    }
+    
+    var { error } = await supabase
+      .from('users')
+      .insert({ username: u, password: hashedPass, role: r });
+    
+    if (error) throw error;
+    
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
+    setTimeout(function() { switchAuthTab('login'); }, 1200);
+  } catch (error) {
+    console.error('Register error:', error);
+    // Fallback ke localStorage
+    var users = getUsers();
+    var exists = false;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username === u) {
+        exists = true;
+        break;
+      }
+    }
+    if (exists) {
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = 'Username sudah terdaftar.';
+      return;
+    }
+    users.push({ username: u, password: p, role: r });
+    saveUsers(users);
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = 'Akun berhasil dibuat (local)! Silakan masuk.';
+    setTimeout(function() { switchAuthTab('login'); }, 1200);
+  }
+}
+
 function launchApp() {
+  console.log('Launching app for user:', currentUser);
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('user-display').textContent = currentUser.username + ' · ' + currentUser.role;
@@ -988,10 +1111,10 @@ function launchApp() {
   }
   addLog('Login berhasil sebagai ' + currentUser.username + ' (' + currentUser.role + ')', 'ok');
   refreshAll();
-  renderAdminTable();
 }
 
 function logout() {
+  console.log('Logging out');
   addLog('Logout: ' + currentUser.username, 'info');
   currentUser = null;
   document.getElementById('auth-screen').style.display = 'flex';
@@ -1720,5 +1843,45 @@ seedData();
   refreshAll();
 })();
 </script>
+  // ════════════════════════════════════════
+//  EVENT LISTENERS (Tambahkan ini di PALING BAWAH script)
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded - attaching event listeners');
+  
+  // Auth buttons
+  var loginBtn = document.getElementById('login-btn');
+  var registerBtn = document.getElementById('register-btn');
+  var tabLogin = document.getElementById('tab-login-btn');
+  var tabRegister = document.getElementById('tab-register-btn');
+  
+  if (loginBtn) {
+    loginBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      doLogin();
+    });
+  }
+  
+  if (registerBtn) {
+    registerBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      doRegister();
+    });
+  }
+  
+  if (tabLogin) {
+    tabLogin.addEventListener('click', function() {
+      switchAuthTab('login');
+    });
+  }
+  
+  if (tabRegister) {
+    tabRegister.addEventListener('click', function() {
+      switchAuthTab('register');
+    });
+  }
+  
+  console.log('Event listeners attached');
+});
 </body>
 </html>
