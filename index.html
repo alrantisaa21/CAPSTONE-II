@@ -6,7 +6,24 @@
 <title>IC Monitoring Dashboard — PT Inkoasku</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- ✅ SUPABASE JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* ═══════════════════════════════════════
+   SUPABASE CONFIG BANNER
+═══════════════════════════════════════ */
+#config-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: linear-gradient(90deg, #d29922, #e3b341);
+  color: #000; padding: 10px 20px; font-size: 13px; font-family: 'IBM Plex Mono', monospace;
+  display: flex; align-items: center; gap: 12px; font-weight: 600;
+}
+#config-banner.hidden { display: none; }
+#config-banner .close-btn {
+  margin-left: auto; cursor: pointer; background: rgba(0,0,0,.2);
+  border: none; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;
+}
+
 :root {
   --bg: #0d1117;
   --surface: #161b22;
@@ -24,51 +41,40 @@
   --cyan: #79c0ff;
   --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-body {
-  font-family: 'IBM Plex Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
-
-/* ── AUTH SCREEN ── */
+/* ── AUTH ── */
 #auth-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
   background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
 }
-.auth-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 40px;
-  width: 360px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-}
-.auth-logo {
-  text-align: center;
-  margin-bottom: 28px;
-}
+.auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px; width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+.auth-logo { text-align: center; margin-bottom: 28px; }
 .auth-logo .brand { font-size: 22px; font-weight: 700; color: var(--cyan); letter-spacing: -0.5px; }
 .auth-logo .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
+.auth-logo .db-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(63,185,80,.15); border: 1px solid rgba(63,185,80,.3); border-radius: 10px; padding: 3px 10px; font-size: 11px; color: var(--green); margin-top: 8px; font-family: 'IBM Plex Mono', monospace; }
 .tab-btns { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg); border-radius: 8px; padding: 4px; }
 .tab-btn { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all .2s; }
 .tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: .5px; }
-.form-group input, .form-group select {
-  width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
-}
+.form-group input, .form-group select { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s; }
 .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
-.btn-primary { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: background .2s; }
+.btn-primary { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: background .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 .auth-msg { margin-top: 12px; font-size: 13px; text-align: center; min-height: 20px; }
+
+/* ── SUPABASE CONFIG SECTION ── */
+.supabase-cfg { background: rgba(31,111,235,.08); border: 1px solid rgba(31,111,235,.25); border-radius: 8px; padding: 14px; margin-bottom: 20px; }
+.supabase-cfg-title { font-size: 11px; color: var(--cyan); font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.supabase-cfg .form-group { margin-bottom: 10px; }
+.supabase-cfg .form-group label { font-size: 10px; }
+.supabase-cfg input { font-size: 12px; padding: 7px 10px; font-family: 'IBM Plex Mono', monospace; }
+.btn-connect { width: 100%; padding: 8px; background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; transition: all .2s; margin-top: 4px; }
+.btn-connect:hover { background: rgba(31,111,235,.15); }
+.connect-status { font-size: 11px; font-family: 'IBM Plex Mono', monospace; text-align: center; margin-top: 8px; }
 
 /* ── APP ── */
 #app { display: none; }
@@ -78,27 +84,29 @@ body {
   position: sticky; top: 0; z-index: 100;
   background: rgba(13,17,23,.95); backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex; align-items: center; height: 56px; gap: 16px;
+  padding: 0 24px; display: flex; align-items: center; height: 56px; gap: 16px;
 }
 .header-brand { font-weight: 700; font-size: 15px; color: var(--cyan); white-space: nowrap; }
 .header-sub { font-size: 12px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
 .header-sep { flex: 1; }
-.live-pill {
-  display: flex; align-items: center; gap: 6px;
-  background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
-  border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--green);
-}
+.live-pill { display: flex; align-items: center; gap: 6px; background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--green); }
 .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-.user-chip {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; padding: 4px 12px; font-size: 13px;
-}
+.db-pill { display: flex; align-items: center; gap: 6px; background: rgba(31,111,235,.12); border: 1px solid rgba(31,111,235,.3); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--cyan); }
+.user-chip { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
 .avatar { width: 24px; height: 24px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
 .btn-logout { padding: 6px 14px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 12px; font-family: inherit; transition: all .2s; }
 .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(13,17,23,.85); z-index: 500;
+  display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+}
+.loading-overlay.show { display: flex; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
 
 /* ── NAV TABS ── */
 .nav-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 24px; overflow-x: auto; }
@@ -106,19 +114,15 @@ body {
 .nav-tab.active { color: var(--text); border-bottom-color: var(--accent); }
 .nav-tab:hover:not(.active) { color: var(--text); }
 
-/* ── MAIN CONTENT ── */
+/* ── MAIN ── */
 .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
 .page { display: none; }
 .page.active { display: block; }
 
-/* ── KPI CARDS ── */
+/* ── KPI ── */
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
 @media(max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} }
-.kpi-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-  padding: 20px; position: relative; overflow: hidden; transition: border-color .2s;
-}
-.kpi-card:hover { border-color: #444; }
+.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; transition: border-color .2s; }
 .kpi-card.danger { border-left: 3px solid var(--red); }
 .kpi-card.warning { border-left: 3px solid var(--orange); }
 .kpi-card.success { border-left: 3px solid var(--green); }
@@ -134,7 +138,7 @@ body {
 .kpi-trend.up { color: var(--red); }
 .kpi-trend.down { color: var(--green); }
 
-/* ── SECTION TITLES ── */
+/* ── SECTION ── */
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .section-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .section-title::before { content: ''; display: inline-block; width: 3px; height: 16px; background: var(--accent); border-radius: 2px; }
@@ -144,13 +148,11 @@ body {
 .badge.yellow { background: rgba(227,179,65,.15); color: var(--yellow); }
 .badge.blue { background: rgba(31,111,235,.15); color: var(--cyan); }
 
-/* ── CHART CARDS ── */
+/* ── CHARTS ── */
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
 .chart-grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
 @media(max-width:900px){ .chart-grid,.chart-grid-3{grid-template-columns:1fr} }
-.card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
-}
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .card-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; }
 .chart-wrap { position: relative; height: 220px; }
@@ -183,7 +185,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .btn-success:hover { background: rgba(63,185,80,.1); }
 .flex-sep { flex: 1; }
 
-/* ── BEFORE VS AFTER ── */
+/* ── BVA ── */
 .bva-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch; margin-bottom: 24px; }
 .bva-col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
 .bva-col.before { border-left: 3px solid var(--red); border-radius: 10px 0 0 10px; }
@@ -202,17 +204,14 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .bva-metric-val.bad { color: var(--red); }
 .bva-metric-val.good { color: var(--green); }
 
-/* ── DN NEGATIVE HANDLER ── */
+/* ── DN HANDLER ── */
 .dn-handler { background: rgba(210,153,34,.06); border: 1px solid rgba(210,153,34,.25); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
 .dn-handler-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .dn-handler-icon { font-size: 20px; }
 .dn-handler-title { font-size: 14px; font-weight: 600; color: var(--yellow); }
 .dn-handler-sub { font-size: 12px; color: var(--text-muted); }
 .dn-items { display: flex; flex-direction: column; gap: 10px; }
-.dn-item {
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-  padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-}
+.dn-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .dn-item-info { flex: 1; min-width: 180px; }
 .dn-item-part { font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
 .dn-item-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
@@ -233,7 +232,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .log-type.error { background: rgba(248,81,73,.15); color: var(--red); }
 .log-type.ok { background: rgba(63,185,80,.15); color: var(--green); }
 
-/* ── INPUT SECTION ── */
+/* ── INPUT ── */
 .input-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 20px; }
 @media(max-width:900px){ .input-grid{grid-template-columns:1fr 1fr} }
 .input-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: .5px; }
@@ -260,25 +259,50 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .role-badge.supervisor { background: rgba(163,113,247,.15); color: var(--purple); }
 .role-badge.staff { background: rgba(121,192,255,.15); color: var(--cyan); }
 
-/* ── EMPTY STATE ── */
+/* ── EMPTY ── */
 .empty { text-align: center; padding: 48px 24px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; }
 .empty-text { font-size: 14px; }
-
-/* ── PROGRESS BAR ── */
-.progress-bar { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
 </style>
 </head>
 <body>
 
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Menghubungkan ke Supabase...</div>
+</div>
+
+<!-- CONFIG BANNER -->
+<div id="config-banner">
+  ⚠️ &nbsp;Belum terhubung ke Supabase. Masukkan URL &amp; API Key Anda di form login untuk memulai.
+  <button class="close-btn" onclick="document.getElementById('config-banner').classList.add('hidden')">✕</button>
+</div>
+
 <!-- AUTH -->
-<div id="auth-screen">
+<div id="auth-screen" style="padding-top:40px">
   <div class="auth-box">
     <div class="auth-logo">
       <div class="brand">PAKO GROUP</div>
       <div class="sub">IC MONITORING SYSTEM · PT INKOASKU</div>
+      <div class="db-badge">🔗 Supabase Database</div>
     </div>
+
+    <!-- SUPABASE CONFIG -->
+    <div class="supabase-cfg">
+      <div class="supabase-cfg-title">⚙ Konfigurasi Supabase</div>
+      <div class="form-group">
+        <label>Project URL</label>
+        <input type="text" id="sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co" autocomplete="off"/>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Anon/Public API Key</label>
+        <input type="password" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." autocomplete="off"/>
+      </div>
+      <button class="btn-connect" onclick="connectSupabase()">🔌 Hubungkan Supabase</button>
+      <div class="connect-status" id="connect-status" style="color:var(--text-muted)">Belum terhubung</div>
+    </div>
+
     <div class="tab-btns">
       <button class="tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Masuk</button>
       <button class="tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Daftar</button>
@@ -293,7 +317,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         <label>Password</label>
         <input type="password" id="login-pass" placeholder="••••••" autocomplete="current-password"/>
       </div>
-      <button class="btn-primary" onclick="doLogin()">Masuk</button>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Masuk</button>
       <p class="auth-msg" id="login-msg" style="color:var(--red)"></p>
     </div>
     <!-- REGISTER -->
@@ -314,7 +338,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <option value="Staff PPIC">Staff PPIC</option>
         </select>
       </div>
-      <button class="btn-primary" onclick="doRegister()">Daftar Akun</button>
+      <button class="btn-primary" id="register-btn" onclick="doRegister()">Daftar Akun</button>
       <p class="auth-msg" id="reg-msg" style="color:var(--green)"></p>
     </div>
   </div>
@@ -322,7 +346,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
 <!-- APP -->
 <div id="app">
-  <!-- HEADER -->
   <div class="header">
     <div>
       <div class="header-brand">PAKO GROUP · IC Monitor</div>
@@ -330,6 +353,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
     </div>
     <div class="header-sep"></div>
     <div class="live-pill"><div class="live-dot"></div><span>LIVE</span></div>
+    <div class="db-pill">🔗 Supabase</div>
     <div class="user-chip">
       <div class="avatar" id="user-avatar">U</div>
       <span id="user-display" style="font-size:13px"></span>
@@ -337,7 +361,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
     <button class="btn-logout" onclick="logout()">Keluar</button>
   </div>
 
-  <!-- NAV -->
   <div class="nav-tabs" id="nav-tabs">
     <div class="nav-tab active" data-page="overview" onclick="showPage('overview', this)">📊 Overview</div>
     <div class="nav-tab" data-page="trends" onclick="showPage('trends', this)">📈 Tren &amp; Grafik</div>
@@ -350,122 +373,50 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
   <div class="main">
 
-    <!-- ══════════════ PAGE: OVERVIEW ══════════════ -->
+    <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
       <div class="kpi-grid">
-        <div class="kpi-card danger">
-          <div class="kpi-label">Mismatch Detected</div>
-          <div class="kpi-value red" id="kpi-mismatch">—</div>
-          <div class="kpi-desc">item dengan data tidak sinkron</div>
-          <div class="kpi-trend up" id="kpi-mismatch-trend"></div>
-        </div>
-        <div class="kpi-card warning">
-          <div class="kpi-label">Outstanding DN Negatif</div>
-          <div class="kpi-value" style="color:var(--orange)" id="kpi-neg">—</div>
-          <div class="kpi-desc">item dengan DN bermasalah</div>
-          <div class="kpi-trend" id="kpi-neg-trend"></div>
-        </div>
-        <div class="kpi-card success">
-          <div class="kpi-label">Sync Accuracy</div>
-          <div class="kpi-value green" id="kpi-acc">—</div>
-          <div class="kpi-desc">tingkat akurasi data antar sistem</div>
-          <div class="kpi-trend down" id="kpi-acc-trend"></div>
-        </div>
-        <div class="kpi-card info">
-          <div class="kpi-label">Total Part Monitored</div>
-          <div class="kpi-value cyan" id="kpi-total">—</div>
-          <div class="kpi-desc">part aktif dalam sistem</div>
-        </div>
+        <div class="kpi-card danger"><div class="kpi-label">Mismatch Detected</div><div class="kpi-value red" id="kpi-mismatch">—</div><div class="kpi-desc">item dengan data tidak sinkron</div><div class="kpi-trend up" id="kpi-mismatch-trend"></div></div>
+        <div class="kpi-card warning"><div class="kpi-label">Outstanding DN Negatif</div><div class="kpi-value" style="color:var(--orange)" id="kpi-neg">—</div><div class="kpi-desc">item dengan DN bermasalah</div><div class="kpi-trend" id="kpi-neg-trend"></div></div>
+        <div class="kpi-card success"><div class="kpi-label">Sync Accuracy</div><div class="kpi-value green" id="kpi-acc">—</div><div class="kpi-desc">tingkat akurasi data antar sistem</div><div class="kpi-trend down" id="kpi-acc-trend"></div></div>
+        <div class="kpi-card info"><div class="kpi-label">Total Part Monitored</div><div class="kpi-value cyan" id="kpi-total">—</div><div class="kpi-desc">part aktif dalam sistem</div></div>
       </div>
-
       <div class="chart-grid">
-        <div class="card">
-          <div class="card-title">Status Distribusi Part</div>
-          <div class="card-sub">Match · Mismatch · DN Negatif</div>
-          <div class="chart-wrap"><canvas id="chart-dist"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Aging Mismatch</div>
-          <div class="card-sub">Distribusi lama mismatch tidak diselesaikan</div>
-          <div class="chart-wrap"><canvas id="chart-aging"></canvas></div>
-        </div>
+        <div class="card"><div class="card-title">Status Distribusi Part</div><div class="card-sub">Match · Mismatch · DN Negatif</div><div class="chart-wrap"><canvas id="chart-dist"></canvas></div></div>
+        <div class="card"><div class="card-title">Aging Mismatch</div><div class="card-sub">Distribusi lama mismatch tidak diselesaikan</div><div class="chart-wrap"><canvas id="chart-aging"></canvas></div></div>
       </div>
-
       <div class="card">
-        <div class="section-header">
-          <div class="section-title">Mismatch Terkini</div>
-          <span class="badge red" id="badge-recent">0 item</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Part Number</th>
-                <th>Qty Infor LN</th>
-                <th>Qty Portal E-WH</th>
-                <th>Selisih</th>
-                <th>Aging (Hari)</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-recent"></tbody>
-          </table>
-        </div>
+        <div class="section-header"><div class="section-title">Mismatch Terkini</div><span class="badge red" id="badge-recent">0 item</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Part Number</th><th>Qty Infor LN</th><th>Qty Portal E-WH</th><th>Selisih</th><th>Aging (Hari)</th><th>Status</th></tr></thead><tbody id="tbl-recent"></tbody></table></div>
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: TRENDS ══════════════ -->
+    <!-- TRENDS -->
     <div class="page" id="page-trends">
       <div class="chart-grid-3">
-        <div class="card">
-          <div class="card-title">Tren Mismatch — 7 Hari Terakhir</div>
-          <div class="card-sub">Jumlah item mismatch per hari (simulasi data historis)</div>
-          <div class="chart-wrap-tall"><canvas id="chart-trend-mismatch"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Sync Accuracy Harian</div>
-          <div class="card-sub">% akurasi sinkronisasi data</div>
-          <div class="chart-wrap-tall"><canvas id="chart-trend-acc"></canvas></div>
-        </div>
+        <div class="card"><div class="card-title">Tren Mismatch — 7 Hari Terakhir</div><div class="card-sub">Jumlah item mismatch per hari</div><div class="chart-wrap-tall"><canvas id="chart-trend-mismatch"></canvas></div></div>
+        <div class="card"><div class="card-title">Sync Accuracy Harian</div><div class="card-sub">% akurasi sinkronisasi data</div><div class="chart-wrap-tall"><canvas id="chart-trend-acc"></canvas></div></div>
       </div>
-
       <div class="chart-grid">
-        <div class="card">
-          <div class="card-title">Outstanding DN Negatif — Tren Mingguan</div>
-          <div class="card-sub">Jumlah item DN negatif per hari</div>
-          <div class="chart-wrap"><canvas id="chart-trend-neg"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Selisih Qty Per Part (Top 6)</div>
-          <div class="card-sub">Besaran selisih Infor LN vs Portal E-WH</div>
-          <div class="chart-wrap"><canvas id="chart-selisih"></canvas></div>
-        </div>
+        <div class="card"><div class="card-title">Outstanding DN Negatif — Tren Mingguan</div><div class="card-sub">Jumlah item DN negatif per hari</div><div class="chart-wrap"><canvas id="chart-trend-neg"></canvas></div></div>
+        <div class="card"><div class="card-title">Selisih Qty Per Part (Top 6)</div><div class="card-sub">Besaran selisih Infor LN vs Portal E-WH</div><div class="chart-wrap"><canvas id="chart-selisih"></canvas></div></div>
       </div>
-
       <div class="card">
         <div class="card-title">Distribusi Status Part — Donut Chart</div>
         <div class="card-sub">Perbandingan proporsi status semua part terdaftar</div>
         <div style="display:flex;gap:32px;align-items:center;flex-wrap:wrap">
-          <div style="width:220px;height:220px;position:relative;flex-shrink:0">
-            <canvas id="chart-donut"></canvas>
-          </div>
+          <div style="width:220px;height:220px;position:relative;flex-shrink:0"><canvas id="chart-donut"></canvas></div>
           <div id="donut-legend" style="display:flex;flex-direction:column;gap:10px"></div>
         </div>
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: BVA ══════════════ -->
+    <!-- BVA -->
     <div class="page" id="page-bva">
-      <div class="section-header" style="margin-bottom:20px">
-        <div class="section-title">Perbandingan Kinerja: Before vs After Implementasi Dashboard</div>
-      </div>
-
+      <div class="section-header" style="margin-bottom:20px"><div class="section-title">Perbandingan Kinerja: Before vs After Implementasi Dashboard</div></div>
       <div class="bva-grid">
         <div class="bva-col before">
-          <div class="bva-label-header">
-            <span class="bva-tag before">BEFORE</span>
-            <span class="bva-title">Sebelum Dashboard (Manual Excel)</span>
-          </div>
+          <div class="bva-label-header"><span class="bva-tag before">BEFORE</span><span class="bva-title">Sebelum Dashboard (Manual Excel)</span></div>
           <div class="bva-metric"><div class="bva-metric-label">Waktu deteksi mismatch/hari</div><div class="bva-metric-val bad">60–90 menit</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Waktu verifikasi DN negatif/hari</div><div class="bva-metric-val bad">20–30 menit</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Proses repetitif manual/hari</div><div class="bva-metric-val bad">30–45 menit</div></div>
@@ -476,15 +427,9 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="bva-metric"><div class="bva-metric-label">Akurasi data (estimasi)</div><div class="bva-metric-val bad">~72%</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Biaya waktu/bulan (est.)</div><div class="bva-metric-val bad">Rp 3.575.000</div></div>
         </div>
-        <div class="bva-divider">
-          <div class="bva-arrow">→</div>
-          <div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;writing-mode:vertical-rl;margin-top:8px">IMPLEMENTASI</div>
-        </div>
+        <div class="bva-divider"><div class="bva-arrow">→</div><div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;writing-mode:vertical-rl;margin-top:8px">IMPLEMENTASI</div></div>
         <div class="bva-col after">
-          <div class="bva-label-header">
-            <span class="bva-tag after">AFTER</span>
-            <span class="bva-title">Setelah Dashboard Monitoring</span>
-          </div>
+          <div class="bva-label-header"><span class="bva-tag after">AFTER</span><span class="bva-title">Setelah Dashboard Monitoring</span></div>
           <div class="bva-metric"><div class="bva-metric-label">Waktu deteksi mismatch/hari</div><div class="bva-metric-val good">&lt;1 menit</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Waktu verifikasi DN negatif/hari</div><div class="bva-metric-val good">~5 menit</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Proses repetitif manual/hari</div><div class="bva-metric-val good">~5 menit</div></div>
@@ -496,20 +441,10 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="bva-metric"><div class="bva-metric-label">Biaya waktu/bulan (est.)</div><div class="bva-metric-val good">Rp 237.500</div></div>
         </div>
       </div>
-
       <div class="chart-grid">
-        <div class="card">
-          <div class="card-title">Perbandingan Waktu Proses (menit/hari)</div>
-          <div class="card-sub">Before (merah) vs After (hijau) per kategori aktivitas</div>
-          <div class="chart-wrap"><canvas id="chart-bva-time"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Penghematan Biaya Waktu (Rp/bulan)</div>
-          <div class="card-sub">Estimasi berdasarkan tarif Staf PPIC Rp50.000/jam</div>
-          <div class="chart-wrap"><canvas id="chart-bva-cost"></canvas></div>
-        </div>
+        <div class="card"><div class="card-title">Perbandingan Waktu Proses (menit/hari)</div><div class="card-sub">Before (merah) vs After (hijau) per kategori aktivitas</div><div class="chart-wrap"><canvas id="chart-bva-time"></canvas></div></div>
+        <div class="card"><div class="card-title">Penghematan Biaya Waktu (Rp/bulan)</div><div class="card-sub">Estimasi berdasarkan tarif Staf PPIC Rp50.000/jam</div><div class="chart-wrap"><canvas id="chart-bva-cost"></canvas></div></div>
       </div>
-
       <div class="kpi-grid">
         <div class="kpi-card success"><div class="kpi-label">Penghematan Waktu</div><div class="kpi-value green">93%</div><div class="kpi-desc">165 → 11 menit/hari</div></div>
         <div class="kpi-card success"><div class="kpi-label">Penghematan Biaya</div><div class="kpi-value green">Rp 3,3 Jt</div><div class="kpi-desc">per bulan (estimasi)</div></div>
@@ -518,152 +453,68 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: DN HANDLER ══════════════ -->
+    <!-- DN HANDLER -->
     <div class="page" id="page-dn-handler">
-      <div class="section-header" style="margin-bottom:16px">
-        <div class="section-title">Penanganan Outstanding DN Negatif</div>
-        <span class="badge yellow" id="dn-count-badge">0 item perlu penanganan</span>
-      </div>
-
+      <div class="section-header" style="margin-bottom:16px"><div class="section-title">Penanganan Outstanding DN Negatif</div><span class="badge yellow" id="dn-count-badge">0 item perlu penanganan</span></div>
       <div class="dn-handler">
-        <div class="dn-handler-header">
-          <div class="dn-handler-icon">⚠️</div>
-          <div>
-            <div class="dn-handler-title">Mekanisme Auto-Reverse &amp; Eskalasi DN Negatif</div>
-            <div class="dn-handler-sub">Item berikut terdeteksi memiliki Outstanding DN bernilai negatif. Lakukan tindakan penanganan sesuai SOP pembatalan PO.</div>
-          </div>
-        </div>
-        <div class="dn-items" id="dn-items-list">
-          <div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div>
-        </div>
+        <div class="dn-handler-header"><div class="dn-handler-icon">⚠️</div><div><div class="dn-handler-title">Mekanisme Auto-Reverse &amp; Eskalasi DN Negatif</div><div class="dn-handler-sub">Item berikut terdeteksi memiliki Outstanding DN bernilai negatif. Lakukan tindakan penanganan sesuai SOP pembatalan PO.</div></div></div>
+        <div class="dn-items" id="dn-items-list"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div></div>
       </div>
-
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">📋 SOP Penanganan Outstanding DN Negatif</div>
         <div class="card-sub">Prosedur standar sesuai rancangan solusi OEM — Approval Workflow</div>
         <div style="display:flex;flex-direction:column;gap:0;margin-top:8px">
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
-            <div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">1</div>
-            <div><div style="font-size:13px;font-weight:600">Identifikasi</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Sistem otomatis menandai DN dengan nilai Outstanding &lt; 0. Alert muncul di dashboard dan log aktivitas.</div></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
-            <div style="width:28px;height:28px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">2</div>
-            <div><div style="font-size:13px;font-weight:600">Verifikasi oleh Staff IC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Staff IC memeriksa apakah PO terkait telah di-cancel atau direvisi. Jika ya, lanjut ke langkah 3.</div></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
-            <div style="width:28px;height:28px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#000">3</div>
-            <div><div style="font-size:13px;font-weight:600">Eskalasi ke Supervisor IC / PPIC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Klik tombol "Eskalasi" → sistem mengirim notifikasi ke Supervisor untuk persetujuan auto-reverse DN.</div></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
-            <div style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">4</div>
-            <div><div style="font-size:13px;font-weight:600">Auto-Reverse DN (Supervisor)</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Supervisor meng-approve reverse → sistem memperbarui Outstanding DN menjadi 0 di Infor LN dan Portal E-Warehouse.</div></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0">
-            <div style="width:28px;height:28px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">5</div>
-            <div><div style="font-size:13px;font-weight:600">Sinkronisasi &amp; Verifikasi Akhir</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Dashboard memperbarui status part, log dicatat otomatis, dan notifikasi dikirim ke semua pihak terkait.</div></div>
-          </div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"><div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">1</div><div><div style="font-size:13px;font-weight:600">Identifikasi</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Sistem otomatis menandai DN dengan nilai Outstanding &lt; 0.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"><div style="width:28px;height:28px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">2</div><div><div style="font-size:13px;font-weight:600">Verifikasi oleh Staff IC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Staff IC memeriksa apakah PO terkait telah di-cancel atau direvisi.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"><div style="width:28px;height:28px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#000">3</div><div><div style="font-size:13px;font-weight:600">Eskalasi ke Supervisor IC / PPIC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Klik tombol "Eskalasi" → sistem mengirim notifikasi untuk persetujuan auto-reverse DN.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"><div style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">4</div><div><div style="font-size:13px;font-weight:600">Auto-Reverse DN (Supervisor)</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Supervisor approve reverse → sistem memperbarui Outstanding DN menjadi 0.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0"><div style="width:28px;height:28px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">5</div><div><div style="font-size:13px;font-weight:600">Sinkronisasi &amp; Verifikasi Akhir</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Dashboard memperbarui status part, log dicatat otomatis.</div></div></div>
         </div>
       </div>
-
-      <div class="card">
-        <div class="section-header"><div class="section-title">Log Penanganan DN Negatif</div></div>
-        <div class="log-container" id="dn-log"></div>
-      </div>
+      <div class="card"><div class="section-header"><div class="section-title">Log Penanganan DN Negatif</div></div><div class="log-container" id="dn-log"></div></div>
     </div>
 
-    <!-- ══════════════ PAGE: DATA ══════════════ -->
+    <!-- DATA -->
     <div class="page" id="page-data">
       <div class="card" style="margin-bottom:20px">
         <div class="section-title" style="margin-bottom:16px">Tambah / Import Data Part</div>
         <div class="input-grid">
-          <div class="input-group">
-            <label>Part Number</label>
-            <input type="text" id="inp-part" placeholder="STL000XXX"/>
-          </div>
-          <div class="input-group">
-            <label>Qty Infor LN</label>
-            <input type="number" id="inp-ln" placeholder="0"/>
-          </div>
-          <div class="input-group">
-            <label>Qty Portal E-WH</label>
-            <input type="number" id="inp-portal" placeholder="0"/>
-          </div>
-          <div class="input-group">
-            <label>Aging (Hari)</label>
-            <input type="number" id="inp-aging" placeholder="0" min="0"/>
-          </div>
-          <div class="input-group">
-            <label>&nbsp;</label>
-            <button class="btn-sm btn-accent" onclick="addPart()">+ Tambah</button>
-          </div>
+          <div class="input-group"><label>Part Number</label><input type="text" id="inp-part" placeholder="STL000XXX"/></div>
+          <div class="input-group"><label>Qty Infor LN</label><input type="number" id="inp-ln" placeholder="0"/></div>
+          <div class="input-group"><label>Qty Portal E-WH</label><input type="number" id="inp-portal" placeholder="0"/></div>
+          <div class="input-group"><label>Aging (Hari)</label><input type="number" id="inp-aging" placeholder="0" min="0"/></div>
+          <div class="input-group"><label>&nbsp;</label><button class="btn-sm btn-accent" onclick="addPart()">+ Tambah</button></div>
         </div>
       </div>
-
       <div class="card">
         <div class="filter-bar">
-          <select id="filter-status" onchange="renderTable()">
-            <option value="all">Semua Status</option>
-            <option value="mismatch">Mismatch</option>
-            <option value="match">Match</option>
-            <option value="neg">DN Negatif</option>
-            <option value="aging">Aging &gt; 3 Hari</option>
-          </select>
+          <select id="filter-status" onchange="renderTable()"><option value="all">Semua Status</option><option value="mismatch">Mismatch</option><option value="match">Match</option><option value="neg">DN Negatif</option><option value="aging">Aging &gt; 3 Hari</option></select>
           <input type="text" id="filter-search" placeholder="🔍 Cari part number..." oninput="renderTable()" style="min-width:200px"/>
           <div class="flex-sep"></div>
           <button class="btn-sm btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+          <button class="btn-sm btn-ghost" onclick="refreshParts()">↻ Refresh</button>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Part Number</th>
-                <th>Qty Infor LN</th>
-                <th>Qty Portal E-WH</th>
-                <th>Selisih</th>
-                <th>Aging (Hari)</th>
-                <th>Status</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-main"></tbody>
-          </table>
-        </div>
+        <div class="table-wrap"><table><thead><tr><th>Part Number</th><th>Qty Infor LN</th><th>Qty Portal E-WH</th><th>Selisih</th><th>Aging (Hari)</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="tbl-main"></tbody></table></div>
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: LOG ══════════════ -->
+    <!-- LOG -->
     <div class="page" id="page-log">
       <div class="card">
-        <div class="section-header">
-          <div class="section-title">Log Aktivitas Sistem</div>
-          <button class="btn-sm btn-ghost" onclick="clearLog()">Hapus Log</button>
-        </div>
-        <div class="log-container" id="main-log" style="max-height:600px">
-          <div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div>
-        </div>
+        <div class="section-header"><div class="section-title">Log Aktivitas Sistem</div><button class="btn-sm btn-ghost" onclick="clearLog()">Hapus Log</button></div>
+        <div class="log-container" id="main-log" style="max-height:600px"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div></div>
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: ADMIN ══════════════ -->
+    <!-- ADMIN -->
     <div class="page" id="page-admin">
       <div class="card">
-        <div class="section-header">
-          <div class="section-title">Manajemen Pengguna</div>
-          <button class="btn-sm btn-ghost" onclick="renderAdminTable()">↻ Refresh</button>
-        </div>
-        <div class="table-wrap">
-          <table class="user-table">
-            <thead>
-              <tr><th>Username</th><th>Role</th><th>Aksi</th></tr>
-            </thead>
-            <tbody id="tbl-admin"></tbody>
-          </table>
-        </div>
+        <div class="section-header"><div class="section-title">Manajemen Pengguna</div><button class="btn-sm btn-ghost" onclick="renderAdminTable()">↻ Refresh</button></div>
+        <div class="table-wrap"><table class="user-table"><thead><tr><th>Username</th><th>Role</th><th>Aksi</th></tr></thead><tbody id="tbl-admin"></tbody></table></div>
       </div>
     </div>
-
-  </div><!-- /main -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
@@ -681,77 +532,96 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 </div>
 
 <script>
-// ════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════
-var currentUser = null;
-var editTarget = null;
-var charts = {};
+// ════════════════════════════════════════════════════════════
+//  SUPABASE INTEGRATION — IC MONITORING DASHBOARD
+//  PT Inkoasku — PAKO GROUP
+// ════════════════════════════════════════════════════════════
+
+// ── STATE ──
+var supabase = null;        // Supabase client instance
+var currentUser = null;     // Logged-in user object
+var partsCache = [];        // Local cache of parts data
+var editTarget = null;      // ID of part being edited
+var charts = {};            // Chart.js instances
 
 // ════════════════════════════════════════
-//  STORAGE HELPERS
+//  SUPABASE CONNECTION
 // ════════════════════════════════════════
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem('ic_users') || '[]'); } catch(e) { return []; }
-}
-function saveUsers(u) { localStorage.setItem('ic_users', JSON.stringify(u)); }
-function getParts() {
-  try { return JSON.parse(localStorage.getItem('ic_parts') || '[]'); } catch(e) { return []; }
-}
-function saveParts(p) { localStorage.setItem('ic_parts', JSON.stringify(p)); }
-function getLogs() {
-  try { return JSON.parse(localStorage.getItem('ic_logs') || '[]'); } catch(e) { return []; }
-}
-function saveLogs(l) { localStorage.setItem('ic_logs', JSON.stringify(l)); }
-function getDnLogs() {
-  try { return JSON.parse(localStorage.getItem('ic_dnlogs') || '[]'); } catch(e) { return []; }
-}
-function saveDnLogs(l) { localStorage.setItem('ic_dnlogs', JSON.stringify(l)); }
 
-function addLog(msg, type) {
-  type = type || 'info';
-  var logs = getLogs();
-  var now = new Date();
-  var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  logs.unshift({ time: time, msg: msg, type: type, user: currentUser ? currentUser.username : 'system' });
-  if (logs.length > 200) logs.splice(200);
-  saveLogs(logs);
-  renderLog();
-}
-
-function addDnLog(msg, type) {
-  type = type || 'warn';
-  var logs = getDnLogs();
-  var now = new Date();
-  var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  logs.unshift({ time: time, msg: msg, type: type });
-  saveDnLogs(logs);
-  renderDnLog();
-}
-
-// ════════════════════════════════════════
-//  SEED DATA
-// ════════════════════════════════════════
-function seedData() {
-  if (!getUsers().length) {
-    saveUsers([
-      { username: 'admin', password: 'admin123', role: 'Supervisor IC' },
-      { username: 'ic_staff', password: 'staff123', role: 'Staff IC' },
-      { username: 'ppic', password: 'ppic123', role: 'Staff PPIC' },
-    ]);
+// Coba load config tersimpan dari localStorage saat pertama kali
+(function loadSavedConfig() {
+  var url = localStorage.getItem('sb_url');
+  var key = localStorage.getItem('sb_key');
+  if (url && key) {
+    document.getElementById('sb-url').value = url;
+    document.getElementById('sb-key').value = key;
+    // Auto-connect jika config tersimpan
+    setTimeout(function() { connectSupabase(true); }, 300);
   }
-  if (!getParts().length) {
-    saveParts([
-      { id: 1, part: 'CDICAT00-000-0001', ln: 300, portal: 350, aging: 5, resolvedDn: false },
-      { id: 2, part: 'CDICAT00-000-0002', ln: 1200, portal: 200, aging: 8, resolvedDn: false },
-      { id: 3, part: 'CDIBOX00-000-0021', ln: 14, portal: 14, aging: 0, resolvedDn: false },
-      { id: 4, part: 'CINCAR00-000-0012', ln: 100, portal: 120, aging: 3, resolvedDn: false },
-      { id: 5, part: 'CDICAR00-000-0001', ln: 650, portal: 650, aging: 0, resolvedDn: false },
-      { id: 6, part: 'STL000190-CONS', ln: 460, portal: 340, aging: 6, resolvedDn: false },
-      { id: 7, part: 'STL000142-CED', ln: 0, portal: 50, aging: 2, resolvedDn: false },
-      { id: 8, part: 'STL000331-BND', ln: 500, portal: 500, aging: 0, resolvedDn: false },
-    ]);
+})();
+
+async function connectSupabase(silent) {
+  var url = document.getElementById('sb-url').value.trim();
+  var key = document.getElementById('sb-key').value.trim();
+  var statusEl = document.getElementById('connect-status');
+
+  if (!url || !key) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = '❌ URL dan API Key wajib diisi.';
+    return false;
   }
+
+  try {
+    // Inisialisasi client Supabase
+    supabase = window.supabase.createClient(url, key);
+
+    // Test koneksi dengan query sederhana
+    var { error } = await supabase.from('ic_parts').select('id').limit(1);
+
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 = table not found (bisa terjadi jika tabel belum dibuat), tetap lanjut
+      if (error.message && error.message.includes('relation') && error.message.includes('does not exist')) {
+        // Tabel belum ada — koneksi berhasil tapi perlu setup SQL
+        statusEl.style.color = 'var(--yellow)';
+        statusEl.textContent = '⚠️ Terhubung! Jalankan SQL setup terlebih dahulu.';
+        localStorage.setItem('sb_url', url);
+        localStorage.setItem('sb_key', key);
+        document.getElementById('config-banner').classList.add('hidden');
+        if (!silent) alert('✅ Supabase terhubung!\n\nNamun tabel belum ditemukan.\nJalankan SQL setup di Supabase SQL Editor Anda.\n(Lihat file SQL_SETUP.sql)');
+        return true;
+      }
+      throw new Error(error.message);
+    }
+
+    // Koneksi & tabel berhasil
+    statusEl.style.color = 'var(--green)';
+    statusEl.textContent = '✅ Terhubung ke Supabase';
+    localStorage.setItem('sb_url', url);
+    localStorage.setItem('sb_key', key);
+    document.getElementById('config-banner').classList.add('hidden');
+
+    if (!silent) {
+      alert('✅ Berhasil terhubung ke Supabase!\nAnda dapat login sekarang.');
+    }
+    return true;
+
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = '❌ Gagal: ' + (e.message || 'Periksa URL/Key Anda');
+    supabase = null;
+    return false;
+  }
+}
+
+// ════════════════════════════════════════
+//  LOADING HELPERS
+// ════════════════════════════════════════
+function showLoading(text) {
+  document.getElementById('loading-text').textContent = text || 'Memuat data...';
+  document.getElementById('loading-overlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loading-overlay').classList.remove('show');
 }
 
 // ════════════════════════════════════════
@@ -765,49 +635,95 @@ function switchAuthTab(tab) {
   document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
 }
 
-function doLogin() {
+async function doLogin() {
+  if (!supabase) { alert('Hubungkan ke Supabase terlebih dahulu!'); return; }
   var u = document.getElementById('login-user').value.trim();
   var p = document.getElementById('login-pass').value;
-  var users = getUsers();
-  var found = null;
-  for (var i = 0; i < users.length; i++) {
-    if (users[i].username === u && users[i].password === p) { found = users[i]; break; }
+  var msgEl = document.getElementById('login-msg');
+  var btn = document.getElementById('login-btn');
+
+  if (!u || !p) { msgEl.textContent = 'Username dan password wajib diisi.'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:2px"></div>';
+  showLoading('Memverifikasi login...');
+
+  try {
+    var { data, error } = await supabase
+      .from('ic_users')
+      .select('*')
+      .eq('username', u)
+      .eq('password', p)
+      .single();
+
+    if (error || !data) {
+      msgEl.textContent = 'Username atau password salah.';
+    } else {
+      currentUser = data;
+      msgEl.textContent = '';
+      await addLog('Login berhasil sebagai ' + u + ' (' + data.role + ')', 'ok');
+      launchApp();
+    }
+  } catch(e) {
+    msgEl.textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Masuk';
+    hideLoading();
   }
-  if (!found) {
-    document.getElementById('login-msg').textContent = 'Username atau password salah.';
-    return;
-  }
-  currentUser = found;
-  document.getElementById('login-msg').textContent = '';
-  launchApp();
 }
 
-function doRegister() {
+async function doRegister() {
+  if (!supabase) { alert('Hubungkan ke Supabase terlebih dahulu!'); return; }
   var u = document.getElementById('reg-user').value.trim();
   var p = document.getElementById('reg-pass').value;
   var r = document.getElementById('reg-role').value;
   var msgEl = document.getElementById('reg-msg');
+  var btn = document.getElementById('register-btn');
+
   if (!u || p.length < 6) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
     return;
   }
-  var users = getUsers();
-  for (var i = 0; i < users.length; i++) {
-    if (users[i].username === u) {
+
+  btn.disabled = true;
+  showLoading('Mendaftarkan akun...');
+
+  try {
+    // Cek apakah username sudah ada
+    var { data: existing } = await supabase
+      .from('ic_users')
+      .select('id')
+      .eq('username', u)
+      .single();
+
+    if (existing) {
       msgEl.style.color = 'var(--red)';
       msgEl.textContent = 'Username sudah terdaftar.';
       return;
     }
+
+    var { error } = await supabase
+      .from('ic_users')
+      .insert([{ username: u, password: p, role: r }]);
+
+    if (error) throw error;
+
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
+    setTimeout(function() { switchAuthTab('login'); }, 1200);
+
+  } catch(e) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Error: ' + (e.message || 'Gagal mendaftar');
+  } finally {
+    btn.disabled = false;
+    hideLoading();
   }
-  users.push({ username: u, password: p, role: r });
-  saveUsers(users);
-  msgEl.style.color = 'var(--green)';
-  msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
-  setTimeout(function() { switchAuthTab('login'); }, 1200);
 }
 
-function launchApp() {
+async function launchApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('user-display').textContent = currentUser.username + ' · ' + currentUser.role;
@@ -815,41 +731,147 @@ function launchApp() {
   if (currentUser.role === 'Supervisor IC') {
     document.getElementById('admin-tab').style.display = '';
   }
-  addLog('Login berhasil sebagai ' + currentUser.username + ' (' + currentUser.role + ')', 'ok');
+  showLoading('Memuat data dari Supabase...');
+  await loadPartsFromDB();
+  hideLoading();
   refreshAll();
+
+  // Real-time subscription untuk update otomatis
+  setupRealtimeSubscription();
 }
 
 function logout() {
   addLog('Logout: ' + currentUser.username, 'info');
   currentUser = null;
+  partsCache = [];
+  // Hapus real-time subscription jika ada
+  if (supabase) {
+    supabase.removeAllChannels();
+  }
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('admin-tab').style.display = 'none';
 }
 
 // ════════════════════════════════════════
-//  NAVIGATION — BUG FIX UTAMA
-//  Sebelumnya menggunakan event.currentTarget yang tidak reliable
-//  Sekarang tab element dikirim langsung sebagai parameter
+//  REAL-TIME SUBSCRIPTION (Supabase)
+// ════════════════════════════════════════
+function setupRealtimeSubscription() {
+  if (!supabase) return;
+
+  supabase
+    .channel('ic_parts_changes')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'ic_parts' },
+      function(payload) {
+        // Update otomatis saat ada perubahan data dari user lain
+        loadPartsFromDB().then(function() {
+          refreshAll();
+          addLog('🔄 Data diperbarui secara real-time (event: ' + payload.eventType + ')', 'info');
+        });
+      }
+    )
+    .subscribe();
+}
+
+// ════════════════════════════════════════
+//  DATABASE OPERATIONS
+// ════════════════════════════════════════
+
+async function loadPartsFromDB() {
+  if (!supabase) return;
+  try {
+    var { data, error } = await supabase
+      .from('ic_parts')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    partsCache = data || [];
+  } catch(e) {
+    console.error('Load parts error:', e);
+    partsCache = [];
+  }
+}
+
+async function insertPart(partData) {
+  var { data, error } = await supabase
+    .from('ic_parts')
+    .insert([partData])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function updatePart(id, updates) {
+  var { error } = await supabase
+    .from('ic_parts')
+    .update(updates)
+    .eq('id', id);
+  if (error) throw error;
+}
+
+async function deletePart_DB(id) {
+  var { error } = await supabase
+    .from('ic_parts')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}
+
+// ── LOG ke Supabase ──
+async function addLog(msg, type) {
+  type = type || 'info';
+  var now = new Date();
+  var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  var username = currentUser ? currentUser.username : 'system';
+
+  // Simpan ke Supabase (jika terhubung)
+  if (supabase) {
+    try {
+      await supabase.from('ic_logs').insert([{
+        time_str: time,
+        message: msg,
+        type: type,
+        username: username,
+        created_at: now.toISOString()
+      }]);
+    } catch(e) { /* silent fail untuk log */ }
+  }
+  renderLog();
+}
+
+async function addDnLog(msg, type) {
+  type = type || 'warn';
+  var now = new Date();
+  var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+
+  if (supabase) {
+    try {
+      await supabase.from('ic_dn_logs').insert([{
+        time_str: time,
+        message: msg,
+        type: type,
+        created_at: now.toISOString()
+      }]);
+    } catch(e) { /* silent fail */ }
+  }
+  renderDnLog();
+}
+
+// ════════════════════════════════════════
+//  NAVIGATION
 // ════════════════════════════════════════
 function showPage(name, tabEl) {
-  // Sembunyikan semua page
   var pages = document.querySelectorAll('.page');
-  for (var i = 0; i < pages.length; i++) {
-    pages[i].classList.remove('active');
-  }
-  // Nonaktifkan semua tab
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
   var tabs = document.querySelectorAll('.nav-tab');
-  for (var j = 0; j < tabs.length; j++) {
-    tabs[j].classList.remove('active');
-  }
-  // Tampilkan page yang dipilih
+  for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
   var target = document.getElementById('page-' + name);
   if (target) target.classList.add('active');
-  // Aktifkan tab yang diklik
   if (tabEl) tabEl.classList.add('active');
 
-  // Render konten halaman
   if (name === 'trends') renderTrendCharts();
   if (name === 'bva') renderBvaCharts();
   if (name === 'data') renderTable();
@@ -862,10 +884,11 @@ function showPage(name, tabEl) {
 //  STATUS LOGIC
 // ════════════════════════════════════════
 function getStatus(p) {
-  if (p.ln < 0 || p.portal < 0 || (p.ln - p.portal) < 0) return 'neg';
-  if (p.ln !== p.portal) return 'mismatch';
+  if (p.qty_ln < 0 || p.qty_portal < 0 || (p.qty_ln - p.qty_portal) < 0) return 'neg';
+  if (p.qty_ln !== p.qty_portal) return 'mismatch';
   return 'match';
 }
+
 function statusLabel(s) {
   if (s === 'mismatch') return '<span class="status-pill mismatch"><span class="status-dot"></span>Mismatch</span>';
   if (s === 'neg') return '<span class="status-pill neg"><span class="status-dot"></span>DN Negatif</span>';
@@ -876,7 +899,7 @@ function statusLabel(s) {
 //  KPI
 // ════════════════════════════════════════
 function calcKPI() {
-  var parts = getParts();
+  var parts = partsCache;
   var mismatch = 0, neg = 0, match = 0;
   for (var i = 0; i < parts.length; i++) {
     var s = getStatus(parts[i]);
@@ -905,15 +928,14 @@ function renderKPI() {
 //  OVERVIEW CHARTS
 // ════════════════════════════════════════
 function renderOverviewCharts() {
-  var parts = getParts();
-  var mismatch = 0, neg = 0, match = 0;
-  var a0 = 0, a1 = 0, a2 = 0, a3 = 0;
+  var parts = partsCache;
+  var mismatch = 0, neg = 0, match = 0, a0 = 0, a1 = 0, a2 = 0, a3 = 0;
   for (var i = 0; i < parts.length; i++) {
     var s = getStatus(parts[i]);
     if (s === 'mismatch') mismatch++;
     else if (s === 'neg') neg++;
     else match++;
-    var ag = parts[i].aging;
+    var ag = parts[i].aging || 0;
     if (ag === 0) a0++;
     else if (ag <= 3) a1++;
     else if (ag <= 7) a2++;
@@ -923,34 +945,17 @@ function renderOverviewCharts() {
   destroyChart('chart-dist');
   charts['chart-dist'] = new Chart(document.getElementById('chart-dist'), {
     type: 'bar',
-    data: {
-      labels: ['Match', 'Mismatch', 'DN Negatif'],
-      datasets: [{
-        data: [match, mismatch, neg],
-        backgroundColor: ['rgba(63,185,80,.7)', 'rgba(248,81,73,.7)', 'rgba(210,153,34,.7)'],
-        borderColor: ['#3fb950', '#f85149', '#d29922'],
-        borderWidth: 1, borderRadius: 6,
-      }]
-    },
+    data: { labels: ['Match', 'Mismatch', 'DN Negatif'], datasets: [{ data: [match, mismatch, neg], backgroundColor: ['rgba(63,185,80,.7)', 'rgba(248,81,73,.7)', 'rgba(210,153,34,.7)'], borderColor: ['#3fb950', '#f85149', '#d29922'], borderWidth: 1, borderRadius: 6 }] },
     options: defaultBarOpts('Jumlah Part')
   });
 
   destroyChart('chart-aging');
   charts['chart-aging'] = new Chart(document.getElementById('chart-aging'), {
     type: 'bar',
-    data: {
-      labels: ['0 hari', '1-3 hari', '4-7 hari', '>7 hari'],
-      datasets: [{
-        data: [a0, a1, a2, a3],
-        backgroundColor: ['rgba(63,185,80,.7)', 'rgba(121,192,255,.7)', 'rgba(210,153,34,.7)', 'rgba(248,81,73,.7)'],
-        borderColor: ['#3fb950', '#79c0ff', '#d29922', '#f85149'],
-        borderWidth: 1, borderRadius: 6,
-      }]
-    },
+    data: { labels: ['0 hari', '1-3 hari', '4-7 hari', '>7 hari'], datasets: [{ data: [a0, a1, a2, a3], backgroundColor: ['rgba(63,185,80,.7)', 'rgba(121,192,255,.7)', 'rgba(210,153,34,.7)', 'rgba(248,81,73,.7)'], borderColor: ['#3fb950', '#79c0ff', '#d29922', '#f85149'], borderWidth: 1, borderRadius: 6 }] },
     options: defaultBarOpts('Jumlah Part')
   });
 
-  // Recent mismatch table
   var recentMis = parts.filter(function(p) { return getStatus(p) !== 'match'; });
   document.getElementById('badge-recent').textContent = recentMis.length + ' item';
   var tbody = document.getElementById('tbl-recent');
@@ -960,15 +965,8 @@ function renderOverviewCharts() {
   }
   tbody.innerHTML = recentMis.map(function(p) {
     var s = getStatus(p);
-    var diff = p.ln - p.portal;
-    return '<tr>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600">' + p.part + '</td>' +
-      '<td>' + p.ln.toLocaleString() + '</td>' +
-      '<td>' + p.portal.toLocaleString() + '</td>' +
-      '<td style="color:' + (Math.abs(diff) > 0 ? 'var(--red)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td>' +
-      '<td><span style="color:' + (p.aging > 3 ? 'var(--orange)' : 'var(--text)') + '">' + p.aging + '</span></td>' +
-      '<td>' + statusLabel(s) + '</td>' +
-    '</tr>';
+    var diff = p.qty_ln - p.qty_portal;
+    return '<tr><td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600">' + p.part_number + '</td><td>' + (p.qty_ln||0).toLocaleString() + '</td><td>' + (p.qty_portal||0).toLocaleString() + '</td><td style="color:' + (Math.abs(diff) > 0 ? 'var(--red)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td><td><span style="color:' + ((p.aging||0) > 3 ? 'var(--orange)' : 'var(--text)') + '">' + (p.aging||0) + '</span></td><td>' + statusLabel(s) + '</td></tr>';
   }).join('');
 }
 
@@ -980,123 +978,71 @@ var days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 function genTrendData(base, len, variance) {
   len = len || 7; variance = variance || 3;
   var result = [];
-  for (var i = 0; i < len; i++) {
-    result.push(Math.max(0, base + Math.round((Math.random() - 0.4) * variance * 2) - i));
-  }
+  for (var i = 0; i < len; i++) result.push(Math.max(0, base + Math.round((Math.random() - 0.4) * variance * 2) - i));
   return result;
 }
 
 function renderTrendCharts() {
   var k = calcKPI();
-  var parts = getParts();
+  var parts = partsCache;
 
   destroyChart('chart-trend-mismatch');
   charts['chart-trend-mismatch'] = new Chart(document.getElementById('chart-trend-mismatch'), {
     type: 'line',
-    data: {
-      labels: days,
-      datasets: [{
-        label: 'Mismatch',
-        data: genTrendData(k.mismatch + 3),
-        borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,.12)',
-        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#f85149',
-      }]
-    },
+    data: { labels: days, datasets: [{ label: 'Mismatch', data: genTrendData(k.mismatch + 3), borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,.12)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#f85149' }] },
     options: defaultLineOpts('Jumlah Item')
   });
 
-  destroyChart('chart-trend-acc');
   var aData = [];
-  for (var i = 0; i < 7; i++) {
-    aData.push(parseFloat(Math.min(99.9, 70 + i * 2.5 + Math.random() * 3).toFixed(1)));
-  }
+  for (var i = 0; i < 7; i++) aData.push(parseFloat(Math.min(99.9, 70 + i * 2.5 + Math.random() * 3).toFixed(1)));
+
+  destroyChart('chart-trend-acc');
   charts['chart-trend-acc'] = new Chart(document.getElementById('chart-trend-acc'), {
     type: 'line',
-    data: {
-      labels: days,
-      datasets: [{
-        label: 'Akurasi (%)',
-        data: aData,
-        borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,.12)',
-        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#3fb950',
-      }]
-    },
+    data: { labels: days, datasets: [{ label: 'Akurasi (%)', data: aData, borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,.12)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#3fb950' }] },
     options: defaultLineOpts('Akurasi (%)')
   });
 
   destroyChart('chart-trend-neg');
   charts['chart-trend-neg'] = new Chart(document.getElementById('chart-trend-neg'), {
     type: 'bar',
-    data: {
-      labels: days,
-      datasets: [{
-        label: 'DN Negatif',
-        data: genTrendData(k.neg + 2, 7, 2),
-        backgroundColor: 'rgba(210,153,34,.6)', borderColor: '#d29922', borderWidth: 1, borderRadius: 4,
-      }]
-    },
+    data: { labels: days, datasets: [{ label: 'DN Negatif', data: genTrendData(k.neg + 2, 7, 2), backgroundColor: 'rgba(210,153,34,.6)', borderColor: '#d29922', borderWidth: 1, borderRadius: 4 }] },
     options: defaultBarOpts('Jumlah Item')
   });
 
-  var top6 = parts.filter(function(p) { return p.ln !== p.portal; })
-    .sort(function(a, b) { return Math.abs(b.ln - b.portal) - Math.abs(a.ln - a.portal); })
+  var top6 = parts.filter(function(p) { return p.qty_ln !== p.qty_portal; })
+    .sort(function(a, b) { return Math.abs(b.qty_ln - b.qty_portal) - Math.abs(a.qty_ln - a.qty_portal); })
     .slice(0, 6);
+
   destroyChart('chart-selisih');
   charts['chart-selisih'] = new Chart(document.getElementById('chart-selisih'), {
     type: 'bar',
     data: {
-      labels: top6.map(function(p) { return p.part.slice(-8); }),
-      datasets: [{
-        label: 'Selisih (Infor LN - Portal)',
-        data: top6.map(function(p) { return p.ln - p.portal; }),
-        backgroundColor: top6.map(function(p) { return (p.ln - p.portal) < 0 ? 'rgba(248,81,73,.7)' : 'rgba(121,192,255,.7)'; }),
-        borderColor: top6.map(function(p) { return (p.ln - p.portal) < 0 ? '#f85149' : '#79c0ff'; }),
-        borderWidth: 1, borderRadius: 4,
-      }]
+      labels: top6.map(function(p) { return p.part_number.slice(-8); }),
+      datasets: [{ label: 'Selisih', data: top6.map(function(p) { return p.qty_ln - p.qty_portal; }), backgroundColor: top6.map(function(p) { return (p.qty_ln - p.qty_portal) < 0 ? 'rgba(248,81,73,.7)' : 'rgba(121,192,255,.7)'; }), borderColor: top6.map(function(p) { return (p.qty_ln - p.qty_portal) < 0 ? '#f85149' : '#79c0ff'; }), borderWidth: 1, borderRadius: 4 }]
     },
     options: defaultBarOpts('Selisih Qty')
   });
 
-  var mis = 0, neg = 0, mat = 0;
+  var mis = 0, negC = 0, mat = 0;
   for (var j = 0; j < parts.length; j++) {
     var st = getStatus(parts[j]);
     if (st === 'mismatch') mis++;
-    else if (st === 'neg') neg++;
+    else if (st === 'neg') negC++;
     else mat++;
   }
-  var total = mat + mis + neg || 1;
+  var total = mat + mis + negC || 1;
+
   destroyChart('chart-donut');
   charts['chart-donut'] = new Chart(document.getElementById('chart-donut'), {
     type: 'doughnut',
-    data: {
-      labels: ['Match', 'Mismatch', 'DN Negatif'],
-      datasets: [{
-        data: [mat, mis, neg],
-        backgroundColor: ['rgba(63,185,80,.8)', 'rgba(248,81,73,.8)', 'rgba(210,153,34,.8)'],
-        borderColor: ['#3fb950', '#f85149', '#d29922'],
-        borderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, cutout: '65%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: function(c) { return c.label + ': ' + c.raw + ' (' + ((c.raw / total) * 100).toFixed(1) + '%)'; } } }
-      }
-    }
+    data: { labels: ['Match', 'Mismatch', 'DN Negatif'], datasets: [{ data: [mat, mis, negC], backgroundColor: ['rgba(63,185,80,.8)', 'rgba(248,81,73,.8)', 'rgba(210,153,34,.8)'], borderColor: ['#3fb950', '#f85149', '#d29922'], borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return c.label + ': ' + c.raw + ' (' + ((c.raw / total) * 100).toFixed(1) + '%)'; } } } } }
   });
 
-  var legData = [
-    { label: 'Match', color: '#3fb950', val: mat },
-    { label: 'Mismatch', color: '#f85149', val: mis },
-    { label: 'DN Negatif', color: '#d29922', val: neg }
-  ];
+  var legData = [{ label: 'Match', color: '#3fb950', val: mat }, { label: 'Mismatch', color: '#f85149', val: mis }, { label: 'DN Negatif', color: '#d29922', val: negC }];
   document.getElementById('donut-legend').innerHTML = legData.map(function(d) {
-    return '<div style="display:flex;align-items:center;gap:10px">' +
-      '<div style="width:12px;height:12px;background:' + d.color + ';border-radius:3px;flex-shrink:0"></div>' +
-      '<div><div style="font-size:13px;font-weight:600">' + d.label + '</div>' +
-      '<div style="font-size:11px;color:var(--text-muted);font-family:\'IBM Plex Mono\',monospace">' + d.val + ' part · ' + ((d.val / total) * 100).toFixed(1) + '%</div></div>' +
-    '</div>';
+    return '<div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:' + d.color + ';border-radius:3px;flex-shrink:0"></div><div><div style="font-size:13px;font-weight:600">' + d.label + '</div><div style="font-size:11px;color:var(--text-muted);font-family:\'IBM Plex Mono\',monospace">' + d.val + ' part · ' + ((d.val / total) * 100).toFixed(1) + '%</div></div></div>';
   }).join('');
 }
 
@@ -1105,50 +1051,18 @@ function renderTrendCharts() {
 // ════════════════════════════════════════
 function renderBvaCharts() {
   var cats = ['Deteksi Mismatch', 'Verifikasi DN Neg', 'Proses Manual'];
-  var before = [75, 25, 37.5];
-  var after = [1, 5, 5];
-
   destroyChart('chart-bva-time');
   charts['chart-bva-time'] = new Chart(document.getElementById('chart-bva-time'), {
     type: 'bar',
-    data: {
-      labels: cats,
-      datasets: [
-        { label: 'Before (menit)', data: before, backgroundColor: 'rgba(248,81,73,.7)', borderColor: '#f85149', borderWidth: 1, borderRadius: 4 },
-        { label: 'After (menit)', data: after, backgroundColor: 'rgba(63,185,80,.7)', borderColor: '#3fb950', borderWidth: 1, borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#e6edf3', font: { size: 12, family: 'IBM Plex Sans' } } }, tooltip: { mode: 'index' } },
-      scales: {
-        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
-        y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Menit/Hari', color: '#7d8590', font: { size: 11 } } }
-      }
-    }
+    data: { labels: cats, datasets: [{ label: 'Before (menit)', data: [75, 25, 37.5], backgroundColor: 'rgba(248,81,73,.7)', borderColor: '#f85149', borderWidth: 1, borderRadius: 4 }, { label: 'After (menit)', data: [1, 5, 5], backgroundColor: 'rgba(63,185,80,.7)', borderColor: '#3fb950', borderWidth: 1, borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#e6edf3', font: { size: 12 } } }, tooltip: { mode: 'index' } }, scales: { x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } }, y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Menit/Hari', color: '#7d8590', font: { size: 11 } } } } }
   });
 
   destroyChart('chart-bva-cost');
   charts['chart-bva-cost'] = new Chart(document.getElementById('chart-bva-cost'), {
     type: 'bar',
-    data: {
-      labels: ['Before', 'After', 'Penghematan'],
-      datasets: [{
-        label: 'Biaya Waktu (Rp)',
-        data: [3575000, 237500, 3337500],
-        backgroundColor: ['rgba(248,81,73,.7)', 'rgba(63,185,80,.7)', 'rgba(121,192,255,.7)'],
-        borderColor: ['#f85149', '#3fb950', '#79c0ff'],
-        borderWidth: 1, borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return 'Rp ' + c.raw.toLocaleString('id-ID'); } } } },
-      scales: {
-        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
-        y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Rp/Bulan', color: '#7d8590', font: { size: 11 } } }
-      }
-    }
+    data: { labels: ['Before', 'After', 'Penghematan'], datasets: [{ label: 'Biaya Waktu (Rp)', data: [3575000, 237500, 3337500], backgroundColor: ['rgba(248,81,73,.7)', 'rgba(63,185,80,.7)', 'rgba(121,192,255,.7)'], borderColor: ['#f85149', '#3fb950', '#79c0ff'], borderWidth: 1, borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return 'Rp ' + c.raw.toLocaleString('id-ID'); } } } }, scales: { x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } }, y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Rp/Bulan', color: '#7d8590', font: { size: 11 } } } } }
   });
 }
 
@@ -1156,8 +1070,8 @@ function renderBvaCharts() {
 //  DN HANDLER
 // ════════════════════════════════════════
 function renderDnHandler() {
-  var parts = getParts();
-  var negParts = parts.filter(function(p) { return getStatus(p) === 'neg' || p.ln < 0 || p.portal < 0; });
+  var parts = partsCache;
+  var negParts = parts.filter(function(p) { return getStatus(p) === 'neg' || p.qty_ln < 0 || p.qty_portal < 0; });
   document.getElementById('dn-count-badge').textContent = negParts.length + ' item perlu penanganan';
   var container = document.getElementById('dn-items-list');
   if (!negParts.length) {
@@ -1165,96 +1079,92 @@ function renderDnHandler() {
     return;
   }
   container.innerHTML = negParts.map(function(p) {
-    var diff = p.ln - p.portal;
-    var resolved = p.resolvedDn;
-    return '<div class="dn-item ' + (resolved ? 'dn-resolved' : '') + '" id="dn-item-' + p.id + '">' +
-      '<div class="dn-item-info">' +
-        '<div class="dn-item-part">' + p.part + '</div>' +
-        '<div class="dn-item-desc">Infor LN: ' + p.ln + ' · Portal E-WH: ' + p.portal + ' · Aging: ' + p.aging + ' hari</div>' +
-      '</div>' +
+    var diff = p.qty_ln - p.qty_portal;
+    return '<div class="dn-item ' + (p.resolved_dn ? 'dn-resolved' : '') + '">' +
+      '<div class="dn-item-info"><div class="dn-item-part">' + p.part_number + '</div><div class="dn-item-desc">Infor LN: ' + p.qty_ln + ' · Portal E-WH: ' + p.qty_portal + ' · Aging: ' + (p.aging||0) + ' hari</div></div>' +
       '<div><div class="dn-item-val">' + diff + '</div><div class="dn-item-val-label">Outstanding DN</div></div>' +
-      '<div class="dn-item-actions">' +
-        (resolved
-          ? '<span class="resolved-badge">✓ Resolved</span>'
-          : '<button class="btn-sm btn-danger" onclick="escalateDn(' + p.id + ')">⚡ Eskalasi</button>' +
-            '<button class="btn-sm btn-success" onclick="resolveDn(' + p.id + ')">✓ Resolve</button>') +
-      '</div>' +
+      '<div class="dn-item-actions">' + (p.resolved_dn ? '<span class="resolved-badge">✓ Resolved</span>' : '<button class="btn-sm btn-danger" onclick="escalateDn(' + p.id + ')">⚡ Eskalasi</button><button class="btn-sm btn-success" onclick="resolveDn(' + p.id + ')">✓ Resolve</button>') + '</div>' +
     '</div>';
   }).join('');
   renderDnLog();
 }
 
-function escalateDn(id) {
-  var parts = getParts();
-  var p = null;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
+async function escalateDn(id) {
+  var p = partsCache.find(function(x) { return x.id === id; });
   if (!p) return;
-  addDnLog('[ESKALASI] Part ' + p.part + ': Outstanding DN=' + (p.ln - p.portal) + ' — Diteruskan ke Supervisor IC/PPIC untuk persetujuan auto-reverse.', 'warn');
-  addLog('Eskalasi DN negatif: ' + p.part + ' (selisih ' + (p.ln - p.portal) + ')', 'warn');
-  alert('✅ Eskalasi berhasil!\n\nPart ' + p.part + ' telah diteruskan ke Supervisor IC untuk persetujuan auto-reverse DN.\n\nOutstanding DN: ' + (p.ln - p.portal) + '\n\nProses akan berlanjut setelah approval diberikan.');
+  await addDnLog('[ESKALASI] Part ' + p.part_number + ': Outstanding DN=' + (p.qty_ln - p.qty_portal) + ' — Diteruskan ke Supervisor IC/PPIC untuk persetujuan auto-reverse.', 'warn');
+  await addLog('Eskalasi DN negatif: ' + p.part_number + ' (selisih ' + (p.qty_ln - p.qty_portal) + ')', 'warn');
+  alert('✅ Eskalasi berhasil!\n\nPart ' + p.part_number + ' telah diteruskan ke Supervisor IC untuk persetujuan auto-reverse DN.\n\nOutstanding DN: ' + (p.qty_ln - p.qty_portal));
 }
 
-function resolveDn(id) {
-  var parts = getParts();
-  var idx = -1;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { idx = i; break; } }
-  if (idx < 0) return;
-  var p = parts[idx];
-  if (!confirm('Resolve DN negatif untuk part ' + p.part + '?\nOutstanding DN akan di-set ke 0 (auto-reverse).\n\nPastikan PO terkait telah dikonfirmasi dibatalkan.')) return;
-  var oldLn = p.ln;
-  parts[idx].ln = parts[idx].portal;
-  parts[idx].resolvedDn = true;
-  saveParts(parts);
-  addDnLog('[RESOLVED] Auto-Reverse DN: Part ' + p.part + ' — Qty Infor LN disesuaikan ' + oldLn + ' → ' + p.portal + '. Outstanding DN = 0.', 'ok');
-  addLog('DN Negatif diselesaikan: ' + p.part + ' — auto-reverse sukses', 'ok');
-  renderDnHandler();
-  refreshAll();
-}
+async function resolveDn(id) {
+  var p = partsCache.find(function(x) { return x.id === id; });
+  if (!p) return;
+  if (!confirm('Resolve DN negatif untuk part ' + p.part_number + '?\nOutstanding DN akan di-set ke 0 (auto-reverse).')) return;
 
-function renderDnLog() {
-  var logs = getDnLogs();
-  var el = document.getElementById('dn-log');
-  if (!el) return;
-  if (!logs.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada log penanganan DN</div></div>';
-    return;
+  showLoading('Menyimpan perubahan...');
+  try {
+    await updatePart(id, { qty_ln: p.qty_portal, resolved_dn: true });
+    await addDnLog('[RESOLVED] Auto-Reverse DN: Part ' + p.part_number + ' — Qty Infor LN disesuaikan ' + p.qty_ln + ' → ' + p.qty_portal + '. Outstanding DN = 0.', 'ok');
+    await addLog('DN Negatif diselesaikan: ' + p.part_number + ' — auto-reverse sukses', 'ok');
+    await loadPartsFromDB();
+    renderDnHandler();
+    refreshAll();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    hideLoading();
   }
-  el.innerHTML = logs.map(function(l) {
-    return '<div class="log-item">' +
-      '<span class="log-time">' + l.time + '</span>' +
-      '<span class="log-msg">' + l.msg + '</span>' +
-      '<span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span>' +
-    '</div>';
-  }).join('');
+}
+
+async function renderDnLog() {
+  var el = document.getElementById('dn-log');
+  if (!el || !supabase) return;
+  try {
+    var { data } = await supabase.from('ic_dn_logs').select('*').order('created_at', { ascending: false }).limit(50);
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada log penanganan DN</div></div>';
+      return;
+    }
+    el.innerHTML = data.map(function(l) {
+      return '<div class="log-item"><span class="log-time">' + l.time_str + '</span><span class="log-msg">' + l.message + '</span><span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span></div>';
+    }).join('');
+  } catch(e) { /* silent */ }
 }
 
 // ════════════════════════════════════════
 //  DATA TABLE
 // ════════════════════════════════════════
-function addPart() {
+async function addPart() {
   var part = document.getElementById('inp-part').value.trim();
   var ln = parseInt(document.getElementById('inp-ln').value) || 0;
   var portal = parseInt(document.getElementById('inp-portal').value) || 0;
   var aging = parseInt(document.getElementById('inp-aging').value) || 0;
   if (!part) { alert('Part number wajib diisi!'); return; }
-  var parts = getParts();
-  for (var i = 0; i < parts.length; i++) {
-    if (parts[i].part === part) { alert('Part sudah ada!'); return; }
+
+  var exists = partsCache.find(function(p) { return p.part_number === part; });
+  if (exists) { alert('Part sudah ada!'); return; }
+
+  showLoading('Menyimpan data part...');
+  try {
+    await insertPart({ part_number: part, qty_ln: ln, qty_portal: portal, aging: aging, resolved_dn: false });
+    await addLog('Part baru ditambahkan: ' + part + ' (LN:' + ln + ', Portal:' + portal + ')', 'ok');
+    document.getElementById('inp-part').value = '';
+    document.getElementById('inp-ln').value = '';
+    document.getElementById('inp-portal').value = '';
+    document.getElementById('inp-aging').value = '';
+    await loadPartsFromDB();
+    renderTable();
+    refreshKPI();
+  } catch(e) {
+    alert('Error menyimpan: ' + e.message);
+  } finally {
+    hideLoading();
   }
-  var id = Date.now();
-  parts.push({ id: id, part: part, ln: ln, portal: portal, aging: aging, resolvedDn: false });
-  saveParts(parts);
-  addLog('Part baru ditambahkan: ' + part + ' (LN:' + ln + ', Portal:' + portal + ')', 'ok');
-  document.getElementById('inp-part').value = '';
-  document.getElementById('inp-ln').value = '';
-  document.getElementById('inp-portal').value = '';
-  document.getElementById('inp-aging').value = '';
-  renderTable();
-  refreshKPI();
 }
 
 function renderTable() {
-  var parts = getParts();
+  var parts = partsCache;
   var fStatus = document.getElementById('filter-status').value;
   var fSearch = document.getElementById('filter-search').value.toLowerCase();
   var filtered = parts.filter(function(p) {
@@ -1263,10 +1173,11 @@ function renderTable() {
       (fStatus === 'mismatch' && s === 'mismatch') ||
       (fStatus === 'match' && s === 'match') ||
       (fStatus === 'neg' && s === 'neg') ||
-      (fStatus === 'aging' && p.aging > 3);
-    var matchSearch = !fSearch || p.part.toLowerCase().indexOf(fSearch) !== -1;
+      (fStatus === 'aging' && (p.aging || 0) > 3);
+    var matchSearch = !fSearch || p.part_number.toLowerCase().indexOf(fSearch) !== -1;
     return matchStatus && matchSearch;
   });
+
   var canEdit = currentUser && (currentUser.role === 'Supervisor IC' || currentUser.role === 'Staff IC');
   var canDelete = currentUser && currentUser.role === 'Supervisor IC';
   var tbody = document.getElementById('tbl-main');
@@ -1276,163 +1187,147 @@ function renderTable() {
   }
   tbody.innerHTML = filtered.map(function(p) {
     var s = getStatus(p);
-    var diff = p.ln - p.portal;
-    return '<tr>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;font-size:12px">' + p.part + '</td>' +
-      '<td>' + p.ln.toLocaleString() + '</td>' +
-      '<td>' + p.portal.toLocaleString() + '</td>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace;color:' + (diff < 0 ? 'var(--red)' : diff > 0 ? 'var(--orange)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td>' +
-      '<td><span style="color:' + (p.aging > 7 ? 'var(--red)' : p.aging > 3 ? 'var(--orange)' : 'var(--text-muted)') + '">' + p.aging + '</span></td>' +
-      '<td>' + statusLabel(s) + '</td>' +
-      '<td style="display:flex;gap:6px">' +
-        (canEdit ? '<button class="btn-sm btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openEdit(' + p.id + ')">Edit</button>' : '') +
-        (canDelete ? '<button class="btn-sm btn-danger" style="padding:4px 10px;font-size:11px" onclick="deletePart(' + p.id + ')">Del</button>' : '') +
-      '</td>' +
-    '</tr>';
+    var diff = (p.qty_ln || 0) - (p.qty_portal || 0);
+    return '<tr><td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;font-size:12px">' + p.part_number + '</td><td>' + (p.qty_ln||0).toLocaleString() + '</td><td>' + (p.qty_portal||0).toLocaleString() + '</td><td style="font-family:\'IBM Plex Mono\',monospace;color:' + (diff < 0 ? 'var(--red)' : diff > 0 ? 'var(--orange)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td><td><span style="color:' + ((p.aging||0) > 7 ? 'var(--red)' : (p.aging||0) > 3 ? 'var(--orange)' : 'var(--text-muted)') + '">' + (p.aging||0) + '</span></td><td>' + statusLabel(s) + '</td><td style="display:flex;gap:6px">' +
+      (canEdit ? '<button class="btn-sm btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openEdit(' + p.id + ')">Edit</button>' : '') +
+      (canDelete ? '<button class="btn-sm btn-danger" style="padding:4px 10px;font-size:11px" onclick="deletePart(' + p.id + ')">Del</button>' : '') +
+    '</td></tr>';
   }).join('');
 }
 
 function openEdit(id) {
-  var parts = getParts();
-  var p = null;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
+  var p = partsCache.find(function(x) { return x.id === id; });
   if (!p) return;
   editTarget = id;
-  document.getElementById('edit-part').value = p.part;
-  document.getElementById('edit-ln').value = p.ln;
-  document.getElementById('edit-portal').value = p.portal;
-  document.getElementById('edit-aging').value = p.aging;
+  document.getElementById('edit-part').value = p.part_number;
+  document.getElementById('edit-ln').value = p.qty_ln;
+  document.getElementById('edit-portal').value = p.qty_portal;
+  document.getElementById('edit-aging').value = p.aging || 0;
   document.getElementById('edit-modal').classList.add('open');
 }
 
-function closeModal() {
-  document.getElementById('edit-modal').classList.remove('open');
-  editTarget = null;
-}
+function closeModal() { document.getElementById('edit-modal').classList.remove('open'); editTarget = null; }
 
-function saveEdit() {
+async function saveEdit() {
   if (!editTarget) return;
-  var parts = getParts();
-  var idx = -1;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === editTarget) { idx = i; break; } }
-  if (idx < 0) return;
-  var old = { ln: parts[idx].ln, portal: parts[idx].portal };
-  parts[idx].ln = parseInt(document.getElementById('edit-ln').value) || 0;
-  parts[idx].portal = parseInt(document.getElementById('edit-portal').value) || 0;
-  parts[idx].aging = parseInt(document.getElementById('edit-aging').value) || 0;
-  saveParts(parts);
-  addLog('Edit part ' + parts[idx].part + ': LN ' + old.ln + '→' + parts[idx].ln + ', Portal ' + old.portal + '→' + parts[idx].portal, 'info');
-  closeModal();
-  renderTable();
-  refreshKPI();
+  var p = partsCache.find(function(x) { return x.id === editTarget; });
+  if (!p) return;
+
+  var newLn = parseInt(document.getElementById('edit-ln').value) || 0;
+  var newPortal = parseInt(document.getElementById('edit-portal').value) || 0;
+  var newAging = parseInt(document.getElementById('edit-aging').value) || 0;
+
+  showLoading('Menyimpan perubahan...');
+  try {
+    await updatePart(editTarget, { qty_ln: newLn, qty_portal: newPortal, aging: newAging });
+    await addLog('Edit part ' + p.part_number + ': LN ' + p.qty_ln + '→' + newLn + ', Portal ' + p.qty_portal + '→' + newPortal, 'info');
+    closeModal();
+    await loadPartsFromDB();
+    renderTable();
+    refreshKPI();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    hideLoading();
+  }
 }
 
-function deletePart(id) {
-  var parts = getParts();
-  var p = null;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
-  if (!confirm('Hapus part ' + (p ? p.part : '') + '?')) return;
-  saveParts(getParts().filter(function(x) { return x.id !== id; }));
-  addLog('Part dihapus: ' + (p ? p.part : id), 'warn');
+async function deletePart(id) {
+  var p = partsCache.find(function(x) { return x.id === id; });
+  if (!confirm('Hapus part ' + (p ? p.part_number : '') + '?')) return;
+
+  showLoading('Menghapus data...');
+  try {
+    await deletePart_DB(id);
+    await addLog('Part dihapus: ' + (p ? p.part_number : id), 'warn');
+    await loadPartsFromDB();
+    renderTable();
+    refreshKPI();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function refreshParts() {
+  showLoading('Refresh data...');
+  await loadPartsFromDB();
   renderTable();
   refreshKPI();
+  hideLoading();
 }
 
 function exportCSV() {
-  var parts = getParts();
+  var parts = partsCache;
   var rows = [['Part Number', 'Qty Infor LN', 'Qty Portal E-WH', 'Selisih', 'Aging (Hari)', 'Status']];
-  parts.forEach(function(p) {
-    rows.push([p.part, p.ln, p.portal, p.ln - p.portal, p.aging, getStatus(p)]);
-  });
+  parts.forEach(function(p) { rows.push([p.part_number, p.qty_ln, p.qty_portal, (p.qty_ln - p.qty_portal), p.aging || 0, getStatus(p)]); });
   var csv = rows.map(function(r) { return r.join(','); }).join('\n');
   var blob = new Blob([csv], { type: 'text/csv' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'ic_data_' + Date.now() + '.csv';
-  a.click();
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ic_data_' + Date.now() + '.csv'; a.click();
   addLog('Export CSV berhasil', 'ok');
 }
 
 // ════════════════════════════════════════
 //  LOG
 // ════════════════════════════════════════
-function renderLog() {
-  var logs = getLogs();
+async function renderLog() {
   var el = document.getElementById('main-log');
-  if (!el) return;
-  if (!logs.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div>';
-    return;
-  }
-  el.innerHTML = logs.map(function(l) {
-    return '<div class="log-item">' +
-      '<span class="log-time">' + l.time + '</span>' +
-      '<span class="log-msg">[' + (l.user || 'system') + '] ' + l.msg + '</span>' +
-      '<span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span>' +
-    '</div>';
-  }).join('');
+  if (!el || !supabase) return;
+  try {
+    var { data } = await supabase.from('ic_logs').select('*').order('created_at', { ascending: false }).limit(100);
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div>';
+      return;
+    }
+    el.innerHTML = data.map(function(l) {
+      return '<div class="log-item"><span class="log-time">' + l.time_str + '</span><span class="log-msg">[' + (l.username||'system') + '] ' + l.message + '</span><span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span></div>';
+    }).join('');
+  } catch(e) { /* silent */ }
 }
 
-function clearLog() {
+async function clearLog() {
   if (!confirm('Hapus semua log?')) return;
-  saveLogs([]);
+  if (!supabase) return;
+  await supabase.from('ic_logs').delete().neq('id', 0);
   renderLog();
 }
 
 // ════════════════════════════════════════
 //  ADMIN
 // ════════════════════════════════════════
-function renderAdminTable() {
-  var users = getUsers();
+async function renderAdminTable() {
+  if (!supabase) return;
   var tbody = document.getElementById('tbl-admin');
-  tbody.innerHTML = users.map(function(u) {
-    var roleClass = u.role === 'Supervisor IC' ? 'supervisor' : 'staff';
-    return '<tr>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace">' + u.username + '</td>' +
-      '<td><span class="role-badge ' + roleClass + '">' + u.role + '</span></td>' +
-      '<td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(\'' + u.username + '\')">Hapus</button></td>' +
-    '</tr>';
-  }).join('');
+  try {
+    var { data } = await supabase.from('ic_users').select('*');
+    if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--text-muted)">Tidak ada pengguna</td></tr>'; return; }
+    tbody.innerHTML = data.map(function(u) {
+      var roleClass = u.role === 'Supervisor IC' ? 'supervisor' : 'staff';
+      return '<tr><td style="font-family:\'IBM Plex Mono\',monospace">' + u.username + '</td><td><span class="role-badge ' + roleClass + '">' + u.role + '</span></td><td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(' + u.id + ',\'' + u.username + '\')">Hapus</button></td></tr>';
+    }).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="3" style="color:var(--red);padding:24px">Error: ' + e.message + '</td></tr>'; }
 }
 
-function deleteUser(username) {
-  if (currentUser && username === currentUser.username) {
-    alert('Tidak dapat menghapus akun sendiri.');
-    return;
-  }
+async function deleteUser(id, username) {
+  if (currentUser && username === currentUser.username) { alert('Tidak dapat menghapus akun sendiri.'); return; }
   if (!confirm('Hapus pengguna "' + username + '"?')) return;
-  saveUsers(getUsers().filter(function(u) { return u.username !== username; }));
-  addLog('Akun dihapus: ' + username, 'warn');
-  renderAdminTable();
+  try {
+    await supabase.from('ic_users').delete().eq('id', id);
+    await addLog('Akun dihapus: ' + username, 'warn');
+    renderAdminTable();
+  } catch(e) { alert('Error: ' + e.message); }
 }
 
 // ════════════════════════════════════════
 //  CHART HELPERS
 // ════════════════════════════════════════
-function destroyChart(id) {
-  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
-}
-
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 function defaultLineOpts(yLabel) {
-  return {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-    scales: {
-      x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' } },
-      y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } }
-    }
-  };
+  return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' } }, y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } } } };
 }
-
 function defaultBarOpts(yLabel) {
-  return {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: {} },
-    scales: {
-      x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
-      y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } }
-    }
-  };
+  return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } }, y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } } } };
 }
 
 // ════════════════════════════════════════
@@ -1440,11 +1335,6 @@ function defaultBarOpts(yLabel) {
 // ════════════════════════════════════════
 function refreshKPI() { renderKPI(); renderOverviewCharts(); }
 function refreshAll() { renderKPI(); renderOverviewCharts(); }
-
-// ════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════
-seedData();
 </script>
 </body>
 </html>
