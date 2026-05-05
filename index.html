@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>IC Monitoring Dashboard — PT Inkoasku</title>
@@ -654,7 +655,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         <div class="table-wrap">
           <table class="user-table">
             <thead>
-              <tr><th>Username</th><th>Role</th><th>Aksi</th></tr>
+              <tr><th>Username</th><th>Role</th><th>Tgl Daftar</th><th>Aksi</th></tr>
             </thead>
             <tbody id="tbl-admin"></tbody>
           </table>
@@ -681,6 +682,13 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 </div>
 
 <script>
+// ════════════════════════════════════════
+//  SUPABASE CONFIG
+// ════════════════════════════════════════
+const SUPABASE_URL = 'https://dajdegksemjcammjbjkw.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhamRlZ2tzZW1qY2FtbWpiamt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDMyODAsImV4cCI6MjA5MzMxOTI4MH0.q8ukFBXlkHEU8-Jpe3wZChqfMtsaba7-3h6o8_iKnyU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════
@@ -765,43 +773,57 @@ function switchAuthTab(tab) {
   document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
 }
 
-function doLogin() {
+async function doLogin() {
   var u = document.getElementById('login-user').value.trim();
   var p = document.getElementById('login-pass').value;
-  var users = getUsers();
-  var found = null;
-  for (var i = 0; i < users.length; i++) {
-    if (users[i].username === u && users[i].password === p) { found = users[i]; break; }
-  }
-  if (!found) {
-    document.getElementById('login-msg').textContent = 'Username atau password salah.';
+  var msgEl = document.getElementById('login-msg');
+  msgEl.textContent = 'Memeriksa...';
+
+  const { data, error } = await sb
+    .from('users')
+    .select('*')
+    .eq('username', u)
+    .eq('password', p)
+    .single();
+
+  if (error || !data) {
+    msgEl.textContent = 'Username atau password salah.';
     return;
   }
-  currentUser = found;
-  document.getElementById('login-msg').textContent = '';
+  currentUser = data;
+  msgEl.textContent = '';
   launchApp();
 }
 
-function doRegister() {
+async function doRegister() {
   var u = document.getElementById('reg-user').value.trim();
   var p = document.getElementById('reg-pass').value;
   var r = document.getElementById('reg-role').value;
   var msgEl = document.getElementById('reg-msg');
+
   if (!u || p.length < 6) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
     return;
   }
-  var users = getUsers();
-  for (var i = 0; i < users.length; i++) {
-    if (users[i].username === u) {
-      msgEl.style.color = 'var(--red)';
-      msgEl.textContent = 'Username sudah terdaftar.';
-      return;
-    }
+
+  msgEl.style.color = 'var(--text-muted)';
+  msgEl.textContent = 'Mendaftarkan akun...';
+
+  const { data, error } = await sb
+    .from('users')
+    .insert([{ username: u, password: p, role: r }])
+    .select()
+    .single();
+
+  if (error) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = error.code === '23505'
+      ? 'Username sudah terdaftar.'
+      : 'Gagal mendaftar: ' + error.message;
+    return;
   }
-  users.push({ username: u, password: p, role: r });
-  saveUsers(users);
+
   msgEl.style.color = 'var(--green)';
   msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
   setTimeout(function() { switchAuthTab('login'); }, 1200);
@@ -1382,30 +1404,52 @@ function clearLog() {
 // ════════════════════════════════════════
 //  ADMIN
 // ════════════════════════════════════════
-function renderAdminTable() {
-  var users = getUsers();
+async function renderAdminTable() {
   var tbody = document.getElementById('tbl-admin');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Memuat data...</td></tr>';
+
+  const { data: users, error } = await sb
+    .from('users')
+    .select('id, username, role, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error || !users) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--red)">Gagal memuat data dari Supabase</td></tr>';
+    return;
+  }
+
   tbody.innerHTML = users.map(function(u) {
     var roleClass = u.role === 'Supervisor IC' ? 'supervisor' : 'staff';
+    var tgl = u.created_at
+      ? new Date(u.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+      : '-';
     return '<tr>' +
       '<td style="font-family:\'IBM Plex Mono\',monospace">' + u.username + '</td>' +
       '<td><span class="role-badge ' + roleClass + '">' + u.role + '</span></td>' +
+      '<td style="color:var(--text-muted);font-size:12px;font-family:\'IBM Plex Mono\',monospace">' + tgl + '</td>' +
       '<td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(\'' + u.username + '\')">Hapus</button></td>' +
     '</tr>';
   }).join('');
 }
-
-function deleteUser(username) {
+async function deleteUser(username) {
   if (currentUser && username === currentUser.username) {
     alert('Tidak dapat menghapus akun sendiri.');
     return;
   }
   if (!confirm('Hapus pengguna "' + username + '"?')) return;
-  saveUsers(getUsers().filter(function(u) { return u.username !== username; }));
-  addLog('Akun dihapus: ' + username, 'warn');
-  renderAdminTable();
-}
 
+  const { error } = await sb
+    .from('users')
+    .delete()
+    .eq('username', username);
+
+  if (!error) {
+    addLog('Akun dihapus: ' + username, 'warn');
+    renderAdminTable();
+  } else {
+    alert('Gagal menghapus: ' + error.message);
+  }
+}
 // ════════════════════════════════════════
 //  CHART HELPERS
 // ════════════════════════════════════════
