@@ -6,11 +6,9 @@
 <title>IC Monitoring Dashboard — PT Inkoasku</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<!-- ✅ FIX: Tambahkan onerror handler agar script tidak crash jika CDN gagal -->
-<script>window.supabaseLoadError = false;</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-        onerror="window.supabaseLoadError = true; console.warn('Supabase CDN gagal dimuat, mode offline aktif.');"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* [SEMUA CSS ANDA TETAP SAMA, TIDAK BERUBAH] */
 :root {
   --bg: #0d1117;
   --surface: #161b22;
@@ -28,13 +26,36 @@
   --cyan: #79c0ff;
   --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
 
 /* ── AUTH SCREEN ── */
-#auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%); }
-.auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px; width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
-.auth-logo { text-align: center; margin-bottom: 28px; }
+#auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+}
+.auth-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px;
+  width: 360px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+.auth-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
 .auth-logo .brand { font-size: 22px; font-weight: 700; color: var(--cyan); letter-spacing: -0.5px; }
 .auth-logo .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
 .tab-btns { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg); border-radius: 8px; padding: 4px; }
@@ -42,27 +63,41 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: .5px; }
-.form-group input, .form-group select { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s; }
+.form-group input, .form-group select {
+  width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
+}
 .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
 .btn-primary { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: background .2s; }
 .btn-primary:hover { background: var(--accent-hover); }
 .auth-msg { margin-top: 12px; font-size: 13px; text-align: center; min-height: 20px; }
 
-/* Offline-mode banner */
-.offline-banner { background: rgba(210,153,34,.12); border: 1px solid rgba(210,153,34,.3); border-radius: 8px; padding: 8px 14px; margin-bottom: 16px; font-size: 12px; color: var(--yellow); display: none; text-align: center; }
-
 /* ── APP ── */
 #app { display: none; }
 
 /* ── HEADER ── */
-.header { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; height: 56px; gap: 16px; }
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,17,23,.95); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; align-items: center; height: 56px; gap: 16px;
+}
 .header-brand { font-weight: 700; font-size: 15px; color: var(--cyan); white-space: nowrap; }
 .header-sub { font-size: 12px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
 .header-sep { flex: 1; }
-.live-pill { display: flex; align-items: center; gap: 6px; background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--green); }
+.live-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
+  border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--green);
+}
 .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-.user-chip { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 12px; font-size: 13px;
+}
 .avatar { width: 24px; height: 24px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
 .btn-logout { padding: 6px 14px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 12px; font-family: inherit; transition: all .2s; }
 .btn-logout:hover { border-color: var(--red); color: var(--red); }
@@ -81,7 +116,10 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 /* ── KPI CARDS ── */
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
 @media(max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} }
-.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; overflow: hidden; transition: border-color .2s; }
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 20px; position: relative; overflow: hidden; transition: border-color .2s;
+}
 .kpi-card:hover { border-color: #444; }
 .kpi-card.danger { border-left: 3px solid var(--red); }
 .kpi-card.warning { border-left: 3px solid var(--orange); }
@@ -112,7 +150,9 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
 .chart-grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
 @media(max-width:900px){ .chart-grid,.chart-grid-3{grid-template-columns:1fr} }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+}
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .card-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; }
 .chart-wrap { position: relative; height: 220px; }
@@ -171,7 +211,10 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .dn-handler-title { font-size: 14px; font-weight: 600; color: var(--yellow); }
 .dn-handler-sub { font-size: 12px; color: var(--text-muted); }
 .dn-items { display: flex; flex-direction: column; gap: 10px; }
-.dn-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dn-item {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
 .dn-item-info { flex: 1; min-width: 180px; }
 .dn-item-part { font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
 .dn-item-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
@@ -237,10 +280,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
     <div class="auth-logo">
       <div class="brand">PAKO GROUP</div>
       <div class="sub">IC MONITORING SYSTEM · PT INKOASKU</div>
-    </div>
-    <!-- ✅ FIX: Banner muncul jika Supabase tidak tersedia (mode offline) -->
-    <div class="offline-banner" id="offline-banner">
-      ⚠️ Mode Offline — Data disimpan di browser lokal
     </div>
     <div class="tab-btns">
       <button class="tab-btn active" id="tab-login-btn">Masuk</button>
@@ -391,6 +430,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="chart-wrap-tall"><canvas id="chart-trend-acc"></canvas></div>
         </div>
       </div>
+
       <div class="chart-grid">
         <div class="card">
           <div class="card-title">Outstanding DN Negatif — Tren Mingguan</div>
@@ -403,6 +443,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="chart-wrap"><canvas id="chart-selisih"></canvas></div>
         </div>
       </div>
+
       <div class="card">
         <div class="card-title">Distribusi Status Part — Donut Chart</div>
         <div class="card-sub">Perbandingan proporsi status semua part terdaftar</div>
@@ -420,6 +461,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       <div class="section-header" style="margin-bottom:20px">
         <div class="section-title">Perbandingan Kinerja: Before vs After Implementasi Dashboard</div>
       </div>
+
       <div class="bva-grid">
         <div class="bva-col before">
           <div class="bva-label-header">
@@ -456,6 +498,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="bva-metric"><div class="bva-metric-label">Biaya waktu/bulan (est.)</div><div class="bva-metric-val good">Rp 237.500</div></div>
         </div>
       </div>
+
       <div class="chart-grid">
         <div class="card">
           <div class="card-title">Perbandingan Waktu Proses (menit/hari)</div>
@@ -468,6 +511,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="chart-wrap"><canvas id="chart-bva-cost"></canvas></div>
         </div>
       </div>
+
       <div class="kpi-grid">
         <div class="kpi-card success"><div class="kpi-label">Penghematan Waktu</div><div class="kpi-value green">93%</div><div class="kpi-desc">165 → 11 menit/hari</div></div>
         <div class="kpi-card success"><div class="kpi-label">Penghematan Biaya</div><div class="kpi-value green">Rp 3,3 Jt</div><div class="kpi-desc">per bulan (estimasi)</div></div>
@@ -482,6 +526,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         <div class="section-title">Penanganan Outstanding DN Negatif</div>
         <span class="badge yellow" id="dn-count-badge">0 item perlu penanganan</span>
       </div>
+
       <div class="dn-handler">
         <div class="dn-handler-header">
           <div class="dn-handler-icon">⚠️</div>
@@ -494,6 +539,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div>
         </div>
       </div>
+
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">📋 SOP Penanganan Outstanding DN Negatif</div>
         <div class="card-sub">Prosedur standar sesuai rancangan solusi OEM — Approval Workflow</div>
@@ -520,6 +566,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           </div>
         </div>
       </div>
+
       <div class="card">
         <div class="section-header"><div class="section-title">Log Penanganan DN Negatif</div></div>
         <div class="log-container" id="dn-log"></div>
@@ -553,6 +600,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           </div>
         </div>
       </div>
+
       <div class="card">
         <div class="filter-bar">
           <select id="filter-status" onchange="renderTable()">
@@ -636,27 +684,11 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
 <script>
 // ════════════════════════════════════════
-//  ✅ FIX: SAFE SUPABASE INITIALIZATION
-//  Dibungkus try-catch sehingga jika CDN
-//  gagal dimuat, script TETAP berjalan
-//  dan tombol-tombol TETAP berfungsi.
+//  SUPABASE CONFIGURATION
 // ════════════════════════════════════════
 const SUPABASE_URL = 'https://dajdegksemjcammjbjkw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhamRlZ2tzZW1qY2FtbWpiamt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDMyODAsImV4cCI6MjA5MzMxOTI4MH0.q8ukFBXlkHEU8-Jpe3wZChqfMtsaba7-3h6o8_iKnyU';
-
-// ✅ FIX: Gunakan 'let' bukan 'const' dan bungkus dengan try-catch
-let supabase = null;
-try {
-  if (typeof window.supabase !== 'undefined' && !window.supabaseLoadError) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('✅ Supabase berhasil diinisialisasi');
-  } else {
-    console.warn('⚠️ Supabase tidak tersedia, menggunakan mode localStorage.');
-  }
-} catch (e) {
-  console.error('❌ Gagal inisialisasi Supabase:', e);
-  supabase = null;
-}
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ════════════════════════════════════════
 //  STATE
@@ -686,174 +718,194 @@ function getDnLogs() {
 function saveDnLogs(l) { localStorage.setItem('ic_dnlogs', JSON.stringify(l)); }
 
 // ════════════════════════════════════════
-//  HASH PASSWORD
+//  HASH PASSWORD FUNCTION
 // ════════════════════════════════════════
 async function hashPassword(password) {
-  // ✅ FIX: Jika crypto.subtle tidak tersedia (non-HTTPS), gunakan fallback
-  if (!crypto || !crypto.subtle) {
-    return password; // fallback: simpan plain (only for HTTP environments)
-  }
-  try {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  } catch(e) {
-    console.warn('Hash gagal, menggunakan plain text:', e);
-    return password;
-  }
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
 }
 
 // ════════════════════════════════════════
-//  SUPABASE HELPERS (dengan null guard)
+//  SUPABASE HELPER FUNCTIONS
 // ════════════════════════════════════════
 async function loadPartsFromSupabase() {
-  // ✅ FIX: Selalu cek null sebelum memanggil supabase
-  if (!supabase) return [];
   try {
-    const { data, error } = await supabase.from('parts').select('*').order('id');
+    const { data, error } = await supabase
+      .from('parts')
+      .select('*')
+      .order('id');
+    
     if (error) throw error;
     if (data && data.length > 0) {
-      const formatted = data.map(p => ({
-        id: p.id, part: p.part, ln: p.ln, portal: p.portal,
-        aging: p.aging, resolvedDn: p.resolved_dn || false
+      const formattedParts = data.map(p => ({
+        id: p.id,
+        part: p.part,
+        ln: p.ln,
+        portal: p.portal,
+        aging: p.aging,
+        resolvedDn: p.resolved_dn || false
       }));
-      saveParts(formatted);
-      return formatted;
+      saveParts(formattedParts);
+      return formattedParts;
     }
     return [];
-  } catch (e) {
-    console.error('loadPartsFromSupabase error:', e);
+  } catch (error) {
+    console.error('Error loading parts from Supabase:', error);
     return [];
   }
 }
 
 async function savePartToSupabase(part) {
-  if (!supabase) return false;
   try {
-    const { error } = await supabase.from('parts').upsert({
-      id: part.id, part: part.part, ln: part.ln, portal: part.portal,
-      aging: part.aging, resolved_dn: part.resolvedDn || false, updated_at: new Date()
-    });
+    const { error } = await supabase
+      .from('parts')
+      .upsert({
+        id: part.id,
+        part: part.part,
+        ln: part.ln,
+        portal: part.portal,
+        aging: part.aging,
+        resolved_dn: part.resolvedDn || false,
+        updated_at: new Date()
+      });
+    
     if (error) throw error;
     return true;
-  } catch (e) {
-    console.error('savePartToSupabase error:', e);
+  } catch (error) {
+    console.error('Error saving part to Supabase:', error);
     return false;
   }
 }
 
 async function deletePartFromSupabase(partId) {
-  if (!supabase) return false;
   try {
-    const { error } = await supabase.from('parts').delete().eq('id', partId);
+    const { error } = await supabase
+      .from('parts')
+      .delete()
+      .eq('id', partId);
+    
     if (error) throw error;
     return true;
-  } catch (e) {
-    console.error('deletePartFromSupabase error:', e);
+  } catch (error) {
+    console.error('Error deleting part from Supabase:', error);
     return false;
   }
 }
 
 async function saveLogToSupabase(log) {
-  if (!supabase) return;
   try {
-    await supabase.from('logs').insert({
-      time: log.time, msg: log.msg, type: log.type,
-      username: log.user || 'system'
-    });
-  } catch (e) {
-    console.error('saveLogToSupabase error:', e);
+    const { error } = await supabase
+      .from('logs')
+      .insert({
+        time: log.time,
+        msg: log.msg,
+        type: log.type,
+        username: log.user || 'system'
+      });
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error saving log to Supabase:', error);
   }
 }
 
 async function loadLogsFromSupabase() {
-  if (!supabase) return [];
   try {
-    const { data, error } = await supabase.from('logs').select('*')
-      .order('created_at', { ascending: false }).limit(200);
+    const { data, error } = await supabase
+      .from('logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    
     if (error) throw error;
     if (data && data.length > 0) {
-      const formatted = data.map(l => ({ time: l.time, msg: l.msg, type: l.type, user: l.username }));
-      saveLogs(formatted);
-      return formatted;
+      const formattedLogs = data.map(l => ({
+        time: l.time,
+        msg: l.msg,
+        type: l.type,
+        user: l.username
+      }));
+      saveLogs(formattedLogs);
+      return formattedLogs;
     }
     return [];
-  } catch (e) {
-    console.error('loadLogsFromSupabase error:', e);
+  } catch (error) {
+    console.error('Error loading logs from Supabase:', error);
     return [];
   }
 }
 
 async function saveDnLogToSupabase(log) {
-  if (!supabase) return;
   try {
-    await supabase.from('dn_logs').insert({ time: log.time, msg: log.msg, type: log.type });
-  } catch (e) {
-    console.error('saveDnLogToSupabase error:', e);
+    const { error } = await supabase
+      .from('dn_logs')
+      .insert({
+        time: log.time,
+        msg: log.msg,
+        type: log.type
+      });
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error saving DN log to Supabase:', error);
   }
 }
 
 // ════════════════════════════════════════
-//  AUTH FUNCTIONS
+//  AUTH FUNCTIONS (With Supabase)
 // ════════════════════════════════════════
 async function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value;
   const msgEl = document.getElementById('login-msg');
-
-  if (!u || !p) { msgEl.textContent = 'Username dan password harus diisi!'; return; }
-
-  // ✅ FIX: Coba Supabase dulu, jika tidak ada langsung ke localStorage
-  if (supabase) {
-    try {
-      const hashedPass = await hashPassword(p);
-      const { data, error } = await supabase.from('users').select('*')
-        .eq('username', u).eq('password', hashedPass);
-      if (error) throw error;
-      if (data && data.length > 0) {
-        currentUser = data[0];
-        msgEl.textContent = '';
-        await loadPartsFromSupabase();
-        await loadLogsFromSupabase();
-        launchApp();
-        return;
-      } else {
-        // Mungkin password disimpan plain (fallback lama)
-        const { data: data2 } = await supabase.from('users').select('*')
-          .eq('username', u).eq('password', p);
-        if (data2 && data2.length > 0) {
-          currentUser = data2[0];
-          msgEl.textContent = '';
-          await loadPartsFromSupabase();
-          await loadLogsFromSupabase();
-          launchApp();
-          return;
-        }
-        msgEl.textContent = 'Username atau password salah.';
-        return;
-      }
-    } catch (e) {
-      console.error('Login Supabase error:', e);
-      // Fall through ke localStorage
-    }
+  
+  if (!u || !p) {
+    msgEl.textContent = 'Username dan password harus diisi!';
+    return;
   }
-
-  // Fallback: localStorage
-  var users = getUsers();
-  var found = null;
-  for (var i = 0; i < users.length; i++) {
-    if (users[i].username === u && (users[i].password === p || users[i].password === await hashPassword(p))) {
-      found = users[i]; break;
+  
+  try {
+    const hashedPass = await hashPassword(p);
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', u)
+      .eq('password', hashedPass);
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      msgEl.textContent = 'Username atau password salah.';
+      return;
     }
-  }
-  if (found) {
-    currentUser = found;
+    
+    currentUser = data[0];
     msgEl.textContent = '';
+    
+    // Load data dari Supabase
+    await loadPartsFromSupabase();
+    await loadLogsFromSupabase();
+    
     launchApp();
-  } else {
-    msgEl.textContent = 'Username atau password salah.';
+  } catch (error) {
+    console.error('Login error:', error);
+    msgEl.textContent = 'Error koneksi ke database.';
+    
+    // Fallback ke localStorage
+    var users = getUsers();
+    var found = null;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username === u && users[i].password === p) { found = users[i]; break; }
+    }
+    if (found) {
+      currentUser = found;
+      msgEl.textContent = '';
+      launchApp();
+    }
   }
 }
 
@@ -862,48 +914,60 @@ async function doRegister() {
   const p = document.getElementById('reg-pass').value;
   const r = document.getElementById('reg-role').value;
   const msgEl = document.getElementById('reg-msg');
-
+  
   if (!u || p.length < 6) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
     return;
   }
-
-  if (supabase) {
-    try {
-      const { data: existing } = await supabase.from('users').select('username').eq('username', u);
-      if (existing && existing.length > 0) {
-        msgEl.style.color = 'var(--red)';
-        msgEl.textContent = 'Username sudah terdaftar.';
-        return;
-      }
-      const hashedPass = await hashPassword(p);
-      const { error } = await supabase.from('users').insert({ username: u, password: hashedPass, role: r });
-      if (error) throw error;
-      msgEl.style.color = 'var(--green)';
-      msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
-      setTimeout(() => switchAuthTab('login'), 1200);
-      return;
-    } catch (e) {
-      console.error('Register Supabase error:', e);
-      // Fall through ke localStorage
-    }
-  }
-
-  // Fallback: localStorage
-  var users = getUsers();
-  for (var i = 0; i < users.length; i++) {
-    if (users[i].username === u) {
+  
+  try {
+    // Cek username sudah ada
+    const { data: existing } = await supabase
+      .from('users')
+      .select('username')
+      .eq('username', u);
+    
+    if (existing && existing.length > 0) {
       msgEl.style.color = 'var(--red)';
       msgEl.textContent = 'Username sudah terdaftar.';
       return;
     }
+    
+    const hashedPass = await hashPassword(p);
+    const { error } = await supabase
+      .from('users')
+      .insert({
+        username: u,
+        password: hashedPass,
+        role: r
+      });
+    
+    if (error) throw error;
+    
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
+    setTimeout(() => switchAuthTab('login'), 1200);
+  } catch (error) {
+    console.error('Register error:', error);
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Gagal mendaftar: ' + error.message;
+    
+    // Fallback ke localStorage
+    var users = getUsers();
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username === u) {
+        msgEl.style.color = 'var(--red)';
+        msgEl.textContent = 'Username sudah terdaftar.';
+        return;
+      }
+    }
+    users.push({ username: u, password: p, role: r });
+    saveUsers(users);
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = 'Akun berhasil dibuat (local)! Silakan masuk.';
+    setTimeout(() => switchAuthTab('login'), 1200);
   }
-  users.push({ username: u, password: p, role: r });
-  saveUsers(users);
-  msgEl.style.color = 'var(--green)';
-  msgEl.textContent = 'Akun berhasil dibuat' + (!supabase ? ' (mode offline)' : '') + '! Silakan masuk.';
-  setTimeout(() => switchAuthTab('login'), 1200);
 }
 
 function switchAuthTab(tab) {
@@ -936,7 +1000,7 @@ function logout() {
 }
 
 // ════════════════════════════════════════
-//  LOG FUNCTIONS
+//  LOG FUNCTIONS (With Supabase Sync)
 // ════════════════════════════════════════
 function addLog(msg, type) {
   type = type || 'info';
@@ -947,7 +1011,12 @@ function addLog(msg, type) {
   logs.unshift(logEntry);
   if (logs.length > 200) logs.splice(200);
   saveLogs(logs);
-  if (currentUser && supabase) { saveLogToSupabase(logEntry); }
+  
+  // Sync to Supabase
+  if (currentUser) {
+    saveLogToSupabase(logEntry);
+  }
+  
   renderLog();
 }
 
@@ -959,12 +1028,17 @@ function addDnLog(msg, type) {
   var logEntry = { time: time, msg: msg, type: type };
   logs.unshift(logEntry);
   saveDnLogs(logs);
-  if (currentUser && supabase) { saveDnLogToSupabase(logEntry); }
+  
+  // Sync to Supabase
+  if (currentUser) {
+    saveDnLogToSupabase(logEntry);
+  }
+  
   renderDnLog();
 }
 
 // ════════════════════════════════════════
-//  SEED DATA
+//  SEED DATA (Local Fallback)
 // ════════════════════════════════════════
 function seedData() {
   if (!getUsers().length) {
@@ -992,11 +1066,18 @@ function seedData() {
 //  NAVIGATION
 // ════════════════════════════════════════
 function showPage(name, tabEl) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  var pages = document.querySelectorAll('.page');
+  for (var i = 0; i < pages.length; i++) {
+    pages[i].classList.remove('active');
+  }
+  var tabs = document.querySelectorAll('.nav-tab');
+  for (var j = 0; j < tabs.length; j++) {
+    tabs[j].classList.remove('active');
+  }
   var target = document.getElementById('page-' + name);
   if (target) target.classList.add('active');
   if (tabEl) tabEl.classList.add('active');
+
   if (name === 'trends') renderTrendCharts();
   if (name === 'bva') renderBvaCharts();
   if (name === 'data') renderTable();
@@ -1004,6 +1085,13 @@ function showPage(name, tabEl) {
   if (name === 'admin') renderAdminTable();
   if (name === 'log') renderLog();
 }
+
+// Attach navigation event listeners
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    showPage(this.getAttribute('data-page'), this);
+  });
+});
 
 // ════════════════════════════════════════
 //  STATUS LOGIC
@@ -1032,7 +1120,7 @@ function calcKPI() {
     else match++;
   }
   var acc = parts.length ? ((match / parts.length) * 100).toFixed(1) + '%' : '—';
-  return { mismatch, neg, match, total: parts.length, acc };
+  return { mismatch: mismatch, neg: neg, match: match, total: parts.length, acc: acc };
 }
 
 function renderKPI() {
@@ -1053,14 +1141,18 @@ function renderKPI() {
 // ════════════════════════════════════════
 function renderOverviewCharts() {
   var parts = getParts();
-  var mismatch = 0, neg = 0, match = 0, a0 = 0, a1 = 0, a2 = 0, a3 = 0;
+  var mismatch = 0, neg = 0, match = 0;
+  var a0 = 0, a1 = 0, a2 = 0, a3 = 0;
   for (var i = 0; i < parts.length; i++) {
     var s = getStatus(parts[i]);
     if (s === 'mismatch') mismatch++;
     else if (s === 'neg') neg++;
     else match++;
     var ag = parts[i].aging;
-    if (ag === 0) a0++; else if (ag <= 3) a1++; else if (ag <= 7) a2++; else a3++;
+    if (ag === 0) a0++;
+    else if (ag <= 3) a1++;
+    else if (ag <= 7) a2++;
+    else a3++;
   }
 
   destroyChart('chart-dist');
@@ -1068,7 +1160,12 @@ function renderOverviewCharts() {
     type: 'bar',
     data: {
       labels: ['Match', 'Mismatch', 'DN Negatif'],
-      datasets: [{ data: [match, mismatch, neg], backgroundColor: ['rgba(63,185,80,.7)', 'rgba(248,81,73,.7)', 'rgba(210,153,34,.7)'], borderColor: ['#3fb950', '#f85149', '#d29922'], borderWidth: 1, borderRadius: 6 }]
+      datasets: [{
+        data: [match, mismatch, neg],
+        backgroundColor: ['rgba(63,185,80,.7)', 'rgba(248,81,73,.7)', 'rgba(210,153,34,.7)'],
+        borderColor: ['#3fb950', '#f85149', '#d29922'],
+        borderWidth: 1, borderRadius: 6,
+      }]
     },
     options: defaultBarOpts('Jumlah Part')
   });
@@ -1078,19 +1175,24 @@ function renderOverviewCharts() {
     type: 'bar',
     data: {
       labels: ['0 hari', '1-3 hari', '4-7 hari', '>7 hari'],
-      datasets: [{ data: [a0, a1, a2, a3], backgroundColor: ['rgba(63,185,80,.7)', 'rgba(121,192,255,.7)', 'rgba(210,153,34,.7)', 'rgba(248,81,73,.7)'], borderColor: ['#3fb950', '#79c0ff', '#d29922', '#f85149'], borderWidth: 1, borderRadius: 6 }]
+      datasets: [{
+        data: [a0, a1, a2, a3],
+        backgroundColor: ['rgba(63,185,80,.7)', 'rgba(121,192,255,.7)', 'rgba(210,153,34,.7)', 'rgba(248,81,73,.7)'],
+        borderColor: ['#3fb950', '#79c0ff', '#d29922', '#f85149'],
+        borderWidth: 1, borderRadius: 6,
+      }]
     },
     options: defaultBarOpts('Jumlah Part')
   });
 
-  var recentMis = parts.filter(p => getStatus(p) !== 'match');
+  var recentMis = parts.filter(function(p) { return getStatus(p) !== 'match'; });
   document.getElementById('badge-recent').textContent = recentMis.length + ' item';
   var tbody = document.getElementById('tbl-recent');
   if (!recentMis.length) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">Semua data sinkron ✅</td></tr>';
     return;
   }
-  tbody.innerHTML = recentMis.map(p => {
+  tbody.innerHTML = recentMis.map(function(p) {
     var s = getStatus(p);
     var diff = p.ln - p.portal;
     return '<tr>' +
@@ -1108,11 +1210,14 @@ function renderOverviewCharts() {
 //  TREND CHARTS
 // ════════════════════════════════════════
 var days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
 function genTrendData(base, len, variance) {
   len = len || 7; variance = variance || 3;
-  var r = [];
-  for (var i = 0; i < len; i++) r.push(Math.max(0, base + Math.round((Math.random() - 0.4) * variance * 2) - i));
-  return r;
+  var result = [];
+  for (var i = 0; i < len; i++) {
+    result.push(Math.max(0, base + Math.round((Math.random() - 0.4) * variance * 2) - i));
+  }
+  return result;
 }
 
 function renderTrendCharts() {
@@ -1122,69 +1227,139 @@ function renderTrendCharts() {
   destroyChart('chart-trend-mismatch');
   charts['chart-trend-mismatch'] = new Chart(document.getElementById('chart-trend-mismatch'), {
     type: 'line',
-    data: { labels: days, datasets: [{ label: 'Mismatch', data: genTrendData(k.mismatch + 3), borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,.12)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#f85149' }] },
+    data: {
+      labels: days,
+      datasets: [{
+        label: 'Mismatch',
+        data: genTrendData(k.mismatch + 3),
+        borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,.12)',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#f85149',
+      }]
+    },
     options: defaultLineOpts('Jumlah Item')
   });
 
   destroyChart('chart-trend-acc');
   var aData = [];
-  for (var i = 0; i < 7; i++) aData.push(parseFloat(Math.min(99.9, 70 + i * 2.5 + Math.random() * 3).toFixed(1)));
+  for (var i = 0; i < 7; i++) {
+    aData.push(parseFloat(Math.min(99.9, 70 + i * 2.5 + Math.random() * 3).toFixed(1)));
+  }
   charts['chart-trend-acc'] = new Chart(document.getElementById('chart-trend-acc'), {
     type: 'line',
-    data: { labels: days, datasets: [{ label: 'Akurasi (%)', data: aData, borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,.12)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#3fb950' }] },
+    data: {
+      labels: days,
+      datasets: [{
+        label: 'Akurasi (%)',
+        data: aData,
+        borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,.12)',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#3fb950',
+      }]
+    },
     options: defaultLineOpts('Akurasi (%)')
   });
 
   destroyChart('chart-trend-neg');
   charts['chart-trend-neg'] = new Chart(document.getElementById('chart-trend-neg'), {
     type: 'bar',
-    data: { labels: days, datasets: [{ label: 'DN Negatif', data: genTrendData(k.neg + 2, 7, 2), backgroundColor: 'rgba(210,153,34,.6)', borderColor: '#d29922', borderWidth: 1, borderRadius: 4 }] },
+    data: {
+      labels: days,
+      datasets: [{
+        label: 'DN Negatif',
+        data: genTrendData(k.neg + 2, 7, 2),
+        backgroundColor: 'rgba(210,153,34,.6)', borderColor: '#d29922', borderWidth: 1, borderRadius: 4,
+      }]
+    },
     options: defaultBarOpts('Jumlah Item')
   });
 
-  var top6 = parts.filter(p => p.ln !== p.portal).sort((a, b) => Math.abs(b.ln - b.portal) - Math.abs(a.ln - a.portal)).slice(0, 6);
+  var top6 = parts.filter(function(p) { return p.ln !== p.portal; })
+    .sort(function(a, b) { return Math.abs(b.ln - b.portal) - Math.abs(a.ln - a.portal); })
+    .slice(0, 6);
   destroyChart('chart-selisih');
   charts['chart-selisih'] = new Chart(document.getElementById('chart-selisih'), {
     type: 'bar',
-    data: { labels: top6.map(p => p.part.slice(-8)), datasets: [{ label: 'Selisih (Infor LN - Portal)', data: top6.map(p => p.ln - p.portal), backgroundColor: top6.map(p => (p.ln - p.portal) < 0 ? 'rgba(248,81,73,.7)' : 'rgba(121,192,255,.7)'), borderColor: top6.map(p => (p.ln - p.portal) < 0 ? '#f85149' : '#79c0ff'), borderWidth: 1, borderRadius: 4 }] },
+    data: {
+      labels: top6.map(function(p) { return p.part.slice(-8); }),
+      datasets: [{
+        label: 'Selisih (Infor LN - Portal)',
+        data: top6.map(function(p) { return p.ln - p.portal; }),
+        backgroundColor: top6.map(function(p) { return (p.ln - p.portal) < 0 ? 'rgba(248,81,73,.7)' : 'rgba(121,192,255,.7)'; }),
+        borderColor: top6.map(function(p) { return (p.ln - p.portal) < 0 ? '#f85149' : '#79c0ff'; }),
+        borderWidth: 1, borderRadius: 4,
+      }]
+    },
     options: defaultBarOpts('Selisih Qty')
   });
 
-  var mis = 0, neg2 = 0, mat = 0;
+  var mis = 0, neg = 0, mat = 0;
   for (var j = 0; j < parts.length; j++) {
     var st = getStatus(parts[j]);
-    if (st === 'mismatch') mis++; else if (st === 'neg') neg2++; else mat++;
+    if (st === 'mismatch') mis++;
+    else if (st === 'neg') neg++;
+    else mat++;
   }
-  var total = mat + mis + neg2 || 1;
+  var total = mat + mis + neg || 1;
   destroyChart('chart-donut');
   charts['chart-donut'] = new Chart(document.getElementById('chart-donut'), {
     type: 'doughnut',
-    data: { labels: ['Match', 'Mismatch', 'DN Negatif'], datasets: [{ data: [mat, mis, neg2], backgroundColor: ['rgba(63,185,80,.8)', 'rgba(248,81,73,.8)', 'rgba(210,153,34,.8)'], borderColor: ['#3fb950', '#f85149', '#d29922'], borderWidth: 2 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.label + ': ' + c.raw + ' (' + ((c.raw / total) * 100).toFixed(1) + '%)' } } } }
+    data: {
+      labels: ['Match', 'Mismatch', 'DN Negatif'],
+      datasets: [{
+        data: [mat, mis, neg],
+        backgroundColor: ['rgba(63,185,80,.8)', 'rgba(248,81,73,.8)', 'rgba(210,153,34,.8)'],
+        borderColor: ['#3fb950', '#f85149', '#d29922'],
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(c) { return c.label + ': ' + c.raw + ' (' + ((c.raw / total) * 100).toFixed(1) + '%)'; } } }
+      }
+    }
   });
 
-  document.getElementById('donut-legend').innerHTML = [
+  var legData = [
     { label: 'Match', color: '#3fb950', val: mat },
     { label: 'Mismatch', color: '#f85149', val: mis },
-    { label: 'DN Negatif', color: '#d29922', val: neg2 }
-  ].map(d => '<div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:' + d.color + ';border-radius:3px;flex-shrink:0"></div><div><div style="font-size:13px;font-weight:600">' + d.label + '</div><div style="font-size:11px;color:var(--text-muted);font-family:\'IBM Plex Mono\',monospace">' + d.val + ' part · ' + ((d.val / total) * 100).toFixed(1) + '%</div></div></div>').join('');
+    { label: 'DN Negatif', color: '#d29922', val: neg }
+  ];
+  document.getElementById('donut-legend').innerHTML = legData.map(function(d) {
+    return '<div style="display:flex;align-items:center;gap:10px">' +
+      '<div style="width:12px;height:12px;background:' + d.color + ';border-radius:3px;flex-shrink:0"></div>' +
+      '<div><div style="font-size:13px;font-weight:600">' + d.label + '</div>' +
+      '<div style="font-size:11px;color:var(--text-muted);font-family:\'IBM Plex Mono\',monospace">' + d.val + ' part · ' + ((d.val / total) * 100).toFixed(1) + '%</div></div>' +
+    '</div>';
+  }).join('');
 }
 
 // ════════════════════════════════════════
 //  BVA CHARTS
 // ════════════════════════════════════════
 function renderBvaCharts() {
+  var cats = ['Deteksi Mismatch', 'Verifikasi DN Neg', 'Proses Manual'];
+  var before = [75, 25, 37.5];
+  var after = [1, 5, 5];
+
   destroyChart('chart-bva-time');
   charts['chart-bva-time'] = new Chart(document.getElementById('chart-bva-time'), {
     type: 'bar',
     data: {
-      labels: ['Deteksi Mismatch', 'Verifikasi DN Neg', 'Proses Manual'],
+      labels: cats,
       datasets: [
-        { label: 'Before (menit)', data: [75, 25, 37.5], backgroundColor: 'rgba(248,81,73,.7)', borderColor: '#f85149', borderWidth: 1, borderRadius: 4 },
-        { label: 'After (menit)', data: [1, 5, 5], backgroundColor: 'rgba(63,185,80,.7)', borderColor: '#3fb950', borderWidth: 1, borderRadius: 4 }
+        { label: 'Before (menit)', data: before, backgroundColor: 'rgba(248,81,73,.7)', borderColor: '#f85149', borderWidth: 1, borderRadius: 4 },
+        { label: 'After (menit)', data: after, backgroundColor: 'rgba(63,185,80,.7)', borderColor: '#3fb950', borderWidth: 1, borderRadius: 4 },
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#e6edf3', font: { size: 12, family: 'IBM Plex Sans' } } }, tooltip: { mode: 'index' } }, scales: { x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } }, y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Menit/Hari', color: '#7d8590', font: { size: 11 } } } } }
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#e6edf3', font: { size: 12, family: 'IBM Plex Sans' } } }, tooltip: { mode: 'index' } },
+      scales: {
+        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
+        y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Menit/Hari', color: '#7d8590', font: { size: 11 } } }
+      }
+    }
   });
 
   destroyChart('chart-bva-cost');
@@ -1192,9 +1367,22 @@ function renderBvaCharts() {
     type: 'bar',
     data: {
       labels: ['Before', 'After', 'Penghematan'],
-      datasets: [{ label: 'Biaya Waktu (Rp)', data: [3575000, 237500, 3337500], backgroundColor: ['rgba(248,81,73,.7)', 'rgba(63,185,80,.7)', 'rgba(121,192,255,.7)'], borderColor: ['#f85149', '#3fb950', '#79c0ff'], borderWidth: 1, borderRadius: 4 }]
+      datasets: [{
+        label: 'Biaya Waktu (Rp)',
+        data: [3575000, 237500, 3337500],
+        backgroundColor: ['rgba(248,81,73,.7)', 'rgba(63,185,80,.7)', 'rgba(121,192,255,.7)'],
+        borderColor: ['#f85149', '#3fb950', '#79c0ff'],
+        borderWidth: 1, borderRadius: 4,
+      }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => 'Rp ' + c.raw.toLocaleString('id-ID') } } }, scales: { x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } }, y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Rp/Bulan', color: '#7d8590', font: { size: 11 } } } } }
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return 'Rp ' + c.raw.toLocaleString('id-ID'); } } } },
+      scales: {
+        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
+        y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Rp/Bulan', color: '#7d8590', font: { size: 11 } } }
+      }
+    }
   });
 }
 
@@ -1203,31 +1391,37 @@ function renderBvaCharts() {
 // ════════════════════════════════════════
 function renderDnHandler() {
   var parts = getParts();
-  var negParts = parts.filter(p => getStatus(p) === 'neg' || p.ln < 0 || p.portal < 0);
+  var negParts = parts.filter(function(p) { return getStatus(p) === 'neg' || p.ln < 0 || p.portal < 0; });
   document.getElementById('dn-count-badge').textContent = negParts.length + ' item perlu penanganan';
   var container = document.getElementById('dn-items-list');
   if (!negParts.length) {
     container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div>';
     return;
   }
-  container.innerHTML = negParts.map(p => {
+  container.innerHTML = negParts.map(function(p) {
     var diff = p.ln - p.portal;
     var resolved = p.resolvedDn;
     return '<div class="dn-item ' + (resolved ? 'dn-resolved' : '') + '" id="dn-item-' + p.id + '">' +
-      '<div class="dn-item-info"><div class="dn-item-part">' + p.part + '</div><div class="dn-item-desc">Infor LN: ' + p.ln + ' · Portal E-WH: ' + p.portal + ' · Aging: ' + p.aging + ' hari</div></div>' +
+      '<div class="dn-item-info">' +
+        '<div class="dn-item-part">' + p.part + '</div>' +
+        '<div class="dn-item-desc">Infor LN: ' + p.ln + ' · Portal E-WH: ' + p.portal + ' · Aging: ' + p.aging + ' hari</div>' +
+      '</div>' +
       '<div><div class="dn-item-val">' + diff + '</div><div class="dn-item-val-label">Outstanding DN</div></div>' +
       '<div class="dn-item-actions">' +
-        (resolved ? '<span class="resolved-badge">✓ Resolved</span>' :
-          '<button class="btn-sm btn-danger" onclick="escalateDn(' + p.id + ')">⚡ Eskalasi</button>' +
-          '<button class="btn-sm btn-success" onclick="resolveDn(' + p.id + ')">✓ Resolve</button>') +
-      '</div></div>';
+        (resolved
+          ? '<span class="resolved-badge">✓ Resolved</span>'
+          : '<button class="btn-sm btn-danger" onclick="escalateDn(' + p.id + ')">⚡ Eskalasi</button>' +
+            '<button class="btn-sm btn-success" onclick="resolveDn(' + p.id + ')">✓ Resolve</button>') +
+      '</div>' +
+    '</div>';
   }).join('');
   renderDnLog();
 }
 
 function escalateDn(id) {
   var parts = getParts();
-  var p = parts.find(x => x.id === id);
+  var p = null;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
   if (!p) return;
   addDnLog('[ESKALASI] Part ' + p.part + ': Outstanding DN=' + (p.ln - p.portal) + ' — Diteruskan ke Supervisor IC/PPIC untuk persetujuan auto-reverse.', 'warn');
   addLog('Eskalasi DN negatif: ' + p.part + ' (selisih ' + (p.ln - p.portal) + ')', 'warn');
@@ -1236,7 +1430,8 @@ function escalateDn(id) {
 
 async function resolveDn(id) {
   var parts = getParts();
-  var idx = parts.findIndex(x => x.id === id);
+  var idx = -1;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { idx = i; break; } }
   if (idx < 0) return;
   var p = parts[idx];
   if (!confirm('Resolve DN negatif untuk part ' + p.part + '?\nOutstanding DN akan di-set ke 0 (auto-reverse).\n\nPastikan PO terkait telah dikonfirmasi dibatalkan.')) return;
@@ -1244,7 +1439,12 @@ async function resolveDn(id) {
   parts[idx].ln = parts[idx].portal;
   parts[idx].resolvedDn = true;
   saveParts(parts);
-  if (currentUser && supabase) await savePartToSupabase(parts[idx]);
+  
+  // Sync to Supabase
+  if (currentUser) {
+    await savePartToSupabase(parts[idx]);
+  }
+  
   addDnLog('[RESOLVED] Auto-Reverse DN: Part ' + p.part + ' — Qty Infor LN disesuaikan ' + oldLn + ' → ' + p.portal + '. Outstanding DN = 0.', 'ok');
   addLog('DN Negatif diselesaikan: ' + p.part + ' — auto-reverse sukses', 'ok');
   renderDnHandler();
@@ -1259,7 +1459,13 @@ function renderDnLog() {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada log penanganan DN</div></div>';
     return;
   }
-  el.innerHTML = logs.map(l => '<div class="log-item"><span class="log-time">' + l.time + '</span><span class="log-msg">' + l.msg + '</span><span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span></div>').join('');
+  el.innerHTML = logs.map(function(l) {
+    return '<div class="log-item">' +
+      '<span class="log-time">' + l.time + '</span>' +
+      '<span class="log-msg">' + l.msg + '</span>' +
+      '<span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span>' +
+    '</div>';
+  }).join('');
 }
 
 // ════════════════════════════════════════
@@ -1272,12 +1478,19 @@ async function addPart() {
   var aging = parseInt(document.getElementById('inp-aging').value) || 0;
   if (!part) { alert('Part number wajib diisi!'); return; }
   var parts = getParts();
-  if (parts.find(p => p.part === part)) { alert('Part sudah ada!'); return; }
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i].part === part) { alert('Part sudah ada!'); return; }
+  }
   var id = Date.now();
-  var newPart = { id, part, ln, portal, aging, resolvedDn: false };
+  var newPart = { id: id, part: part, ln: ln, portal: portal, aging: aging, resolvedDn: false };
   parts.push(newPart);
   saveParts(parts);
-  if (currentUser && supabase) await savePartToSupabase(newPart);
+  
+  // Sync to Supabase
+  if (currentUser) {
+    await savePartToSupabase(newPart);
+  }
+  
   addLog('Part baru ditambahkan: ' + part + ' (LN:' + ln + ', Portal:' + portal + ')', 'ok');
   document.getElementById('inp-part').value = '';
   document.getElementById('inp-ln').value = '';
@@ -1291,10 +1504,14 @@ function renderTable() {
   var parts = getParts();
   var fStatus = document.getElementById('filter-status').value;
   var fSearch = document.getElementById('filter-search').value.toLowerCase();
-  var filtered = parts.filter(p => {
+  var filtered = parts.filter(function(p) {
     var s = getStatus(p);
-    var matchStatus = fStatus === 'all' || (fStatus === 'mismatch' && s === 'mismatch') || (fStatus === 'match' && s === 'match') || (fStatus === 'neg' && s === 'neg') || (fStatus === 'aging' && p.aging > 3);
-    var matchSearch = !fSearch || p.part.toLowerCase().includes(fSearch);
+    var matchStatus = fStatus === 'all' ||
+      (fStatus === 'mismatch' && s === 'mismatch') ||
+      (fStatus === 'match' && s === 'match') ||
+      (fStatus === 'neg' && s === 'neg') ||
+      (fStatus === 'aging' && p.aging > 3);
+    var matchSearch = !fSearch || p.part.toLowerCase().indexOf(fSearch) !== -1;
     return matchStatus && matchSearch;
   });
   var canEdit = currentUser && (currentUser.role === 'Supervisor IC' || currentUser.role === 'Staff IC');
@@ -1304,7 +1521,7 @@ function renderTable() {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Tidak ada data ditemukan</td></tr>';
     return;
   }
-  tbody.innerHTML = filtered.map(p => {
+  tbody.innerHTML = filtered.map(function(p) {
     var s = getStatus(p);
     var diff = p.ln - p.portal;
     return '<tr>' +
@@ -1317,12 +1534,15 @@ function renderTable() {
       '<td style="display:flex;gap:6px">' +
         (canEdit ? '<button class="btn-sm btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openEdit(' + p.id + ')">Edit</button>' : '') +
         (canDelete ? '<button class="btn-sm btn-danger" style="padding:4px 10px;font-size:11px" onclick="deletePart(' + p.id + ')">Del</button>' : '') +
-      '</td></tr>';
+      '</td>' +
+    '</tr>';
   }).join('');
 }
 
 function openEdit(id) {
-  var p = getParts().find(x => x.id === id);
+  var parts = getParts();
+  var p = null;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
   if (!p) return;
   editTarget = id;
   document.getElementById('edit-part').value = p.part;
@@ -1340,14 +1560,20 @@ function closeModal() {
 async function saveEdit() {
   if (!editTarget) return;
   var parts = getParts();
-  var idx = parts.findIndex(x => x.id === editTarget);
+  var idx = -1;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === editTarget) { idx = i; break; } }
   if (idx < 0) return;
   var old = { ln: parts[idx].ln, portal: parts[idx].portal };
   parts[idx].ln = parseInt(document.getElementById('edit-ln').value) || 0;
   parts[idx].portal = parseInt(document.getElementById('edit-portal').value) || 0;
   parts[idx].aging = parseInt(document.getElementById('edit-aging').value) || 0;
   saveParts(parts);
-  if (currentUser && supabase) await savePartToSupabase(parts[idx]);
+  
+  // Sync to Supabase
+  if (currentUser) {
+    await savePartToSupabase(parts[idx]);
+  }
+  
   addLog('Edit part ' + parts[idx].part + ': LN ' + old.ln + '→' + parts[idx].ln + ', Portal ' + old.portal + '→' + parts[idx].portal, 'info');
   closeModal();
   renderTable();
@@ -1356,10 +1582,17 @@ async function saveEdit() {
 
 async function deletePart(id) {
   var parts = getParts();
-  var p = parts.find(x => x.id === id);
+  var p = null;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
   if (!confirm('Hapus part ' + (p ? p.part : '') + '?')) return;
-  if (currentUser && supabase) await deletePartFromSupabase(id);
-  saveParts(getParts().filter(x => x.id !== id));
+  
+  // Delete from Supabase
+  if (currentUser) {
+    await deletePartFromSupabase(id);
+  }
+  
+  // Delete from local storage
+  saveParts(getParts().filter(function(x) { return x.id !== id; }));
   addLog('Part dihapus: ' + (p ? p.part : id), 'warn');
   renderTable();
   refreshKPI();
@@ -1368,8 +1601,10 @@ async function deletePart(id) {
 function exportCSV() {
   var parts = getParts();
   var rows = [['Part Number', 'Qty Infor LN', 'Qty Portal E-WH', 'Selisih', 'Aging (Hari)', 'Status']];
-  parts.forEach(p => rows.push([p.part, p.ln, p.portal, p.ln - p.portal, p.aging, getStatus(p)]));
-  var csv = rows.map(r => r.join(',')).join('\n');
+  parts.forEach(function(p) {
+    rows.push([p.part, p.ln, p.portal, p.ln - p.portal, p.aging, getStatus(p)]);
+  });
+  var csv = rows.map(function(r) { return r.join(','); }).join('\n');
   var blob = new Blob([csv], { type: 'text/csv' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1389,7 +1624,13 @@ function renderLog() {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div>';
     return;
   }
-  el.innerHTML = logs.map(l => '<div class="log-item"><span class="log-time">' + l.time + '</span><span class="log-msg">[' + (l.user || 'system') + '] ' + l.msg + '</span><span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span></div>').join('');
+  el.innerHTML = logs.map(function(l) {
+    return '<div class="log-item">' +
+      '<span class="log-time">' + l.time + '</span>' +
+      '<span class="log-msg">[' + (l.user || 'system') + '] ' + l.msg + '</span>' +
+      '<span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span>' +
+    '</div>';
+  }).join('');
 }
 
 function clearLog() {
@@ -1404,16 +1645,23 @@ function clearLog() {
 function renderAdminTable() {
   var users = getUsers();
   var tbody = document.getElementById('tbl-admin');
-  tbody.innerHTML = users.map(u => {
+  tbody.innerHTML = users.map(function(u) {
     var roleClass = u.role === 'Supervisor IC' ? 'supervisor' : 'staff';
-    return '<tr><td style="font-family:\'IBM Plex Mono\',monospace">' + u.username + '</td><td><span class="role-badge ' + roleClass + '">' + u.role + '</span></td><td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(\'' + u.username + '\')">Hapus</button></td></tr>';
+    return '<tr>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace">' + u.username + '</td>' +
+      '<td><span class="role-badge ' + roleClass + '">' + u.role + '</span></td>' +
+      '<td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(\'' + u.username + '\')">Hapus</button></td>' +
+    '</tr>';
   }).join('');
 }
 
 function deleteUser(username) {
-  if (currentUser && username === currentUser.username) { alert('Tidak dapat menghapus akun sendiri.'); return; }
+  if (currentUser && username === currentUser.username) {
+    alert('Tidak dapat menghapus akun sendiri.');
+    return;
+  }
   if (!confirm('Hapus pengguna "' + username + '"?')) return;
-  saveUsers(getUsers().filter(u => u.username !== username));
+  saveUsers(getUsers().filter(function(u) { return u.username !== username; }));
   addLog('Akun dihapus: ' + username, 'warn');
   renderAdminTable();
 }
@@ -1424,11 +1672,27 @@ function deleteUser(username) {
 function destroyChart(id) {
   if (charts[id]) { charts[id].destroy(); delete charts[id]; }
 }
+
 function defaultLineOpts(yLabel) {
-  return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' } }, y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } } } };
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+    scales: {
+      x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' } },
+      y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } }
+    }
+  };
 }
+
 function defaultBarOpts(yLabel) {
-  return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: {} }, scales: { x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } }, y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } } } };
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {} },
+    scales: {
+      x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
+      y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } }
+    }
+  };
 }
 
 // ════════════════════════════════════════
@@ -1438,53 +1702,23 @@ function refreshKPI() { renderKPI(); renderOverviewCharts(); }
 function refreshAll() { renderKPI(); renderOverviewCharts(); }
 
 // ════════════════════════════════════════
-//  ✅ FIX: ATTACH EVENT LISTENERS
-//  Semua listener dipasang di dalam
-//  DOMContentLoaded agar selalu berjalan
-//  meskipun Supabase gagal dimuat.
+//  INITIALIZATION
 // ════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', function() {
-  // Auth tabs
-  document.getElementById('tab-login-btn').addEventListener('click', () => switchAuthTab('login'));
-  document.getElementById('tab-register-btn').addEventListener('click', () => switchAuthTab('register'));
+// Attach auth button event listeners
+document.getElementById('tab-login-btn').addEventListener('click', () => switchAuthTab('login'));
+document.getElementById('tab-register-btn').addEventListener('click', () => switchAuthTab('register'));
+document.getElementById('login-btn').addEventListener('click', doLogin);
+document.getElementById('register-btn').addEventListener('click', doRegister);
 
-  // Auth buttons
-  document.getElementById('login-btn').addEventListener('click', doLogin);
-  document.getElementById('register-btn').addEventListener('click', doRegister);
+// Seed local data
+seedData();
 
-  // Enter key support
-  document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  document.getElementById('login-user').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  document.getElementById('reg-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
-
-  // Navigation tabs
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.addEventListener('click', function() { showPage(this.getAttribute('data-page'), this); });
-  });
-
-  // Show offline banner if supabase not available
-  if (!supabase) {
-    document.getElementById('offline-banner').style.display = 'block';
-  }
-
-  // Seed local data
-  seedData();
-
-  // Initialize with Supabase data if available, otherwise use local data
-  (async function init() {
-    try {
-      if (supabase) {
-        await loadPartsFromSupabase();
-        await loadLogsFromSupabase();
-      }
-    } catch(e) {
-      console.error('Init error:', e);
-    } finally {
-      // Always run refreshAll, regardless of Supabase status
-      refreshAll();
-    }
-  })();
-});
+// Load data from Supabase on page load
+(async function init() {
+  await loadPartsFromSupabase();
+  await loadLogsFromSupabase();
+  refreshAll();
+})();
 </script>
 </body>
 </html>
