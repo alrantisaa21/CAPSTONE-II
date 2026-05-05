@@ -6,9 +6,7 @@
 <title>IC Monitoring Dashboard — PT Inkoasku</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* [SEMUA CSS ANDA TETAP SAMA, TIDAK BERUBAH] */
 :root {
   --bg: #0d1117;
   --surface: #161b22;
@@ -282,8 +280,8 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       <div class="sub">IC MONITORING SYSTEM · PT INKOASKU</div>
     </div>
     <div class="tab-btns">
-      <button class="tab-btn active" id="tab-login-btn">Masuk</button>
-      <button class="tab-btn" id="tab-register-btn">Daftar</button>
+      <button class="tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Masuk</button>
+      <button class="tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Daftar</button>
     </div>
     <!-- LOGIN -->
     <div id="login-form">
@@ -295,7 +293,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         <label>Password</label>
         <input type="password" id="login-pass" placeholder="••••••" autocomplete="current-password"/>
       </div>
-      <button class="btn-primary" id="login-btn">Masuk</button>
+      <button class="btn-primary" onclick="doLogin()">Masuk</button>
       <p class="auth-msg" id="login-msg" style="color:var(--red)"></p>
     </div>
     <!-- REGISTER -->
@@ -316,7 +314,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <option value="Staff PPIC">Staff PPIC</option>
         </select>
       </div>
-      <button class="btn-primary" id="register-btn">Daftar Akun</button>
+      <button class="btn-primary" onclick="doRegister()">Daftar Akun</button>
       <p class="auth-msg" id="reg-msg" style="color:var(--green)"></p>
     </div>
   </div>
@@ -341,13 +339,13 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
   <!-- NAV -->
   <div class="nav-tabs" id="nav-tabs">
-    <div class="nav-tab active" data-page="overview">📊 Overview</div>
-    <div class="nav-tab" data-page="trends">📈 Tren &amp; Grafik</div>
-    <div class="nav-tab" data-page="bva">⚖️ Before vs After</div>
-    <div class="nav-tab" data-page="dn-handler">🚨 DN Negatif</div>
-    <div class="nav-tab" data-page="data">🗃️ Data Part</div>
-    <div class="nav-tab" data-page="log">📋 Log Aktivitas</div>
-    <div class="nav-tab" id="admin-tab" data-page="admin" style="display:none">⚙️ Admin</div>
+    <div class="nav-tab active" data-page="overview" onclick="showPage('overview', this)">📊 Overview</div>
+    <div class="nav-tab" data-page="trends" onclick="showPage('trends', this)">📈 Tren &amp; Grafik</div>
+    <div class="nav-tab" data-page="bva" onclick="showPage('bva', this)">⚖️ Before vs After</div>
+    <div class="nav-tab" data-page="dn-handler" onclick="showPage('dn-handler', this)">🚨 DN Negatif</div>
+    <div class="nav-tab" data-page="data" onclick="showPage('data', this)">🗃️ Data Part</div>
+    <div class="nav-tab" data-page="log" onclick="showPage('log', this)">📋 Log Aktivitas</div>
+    <div class="nav-tab" id="admin-tab" data-page="admin" style="display:none" onclick="showPage('admin', this)">⚙️ Admin</div>
   </div>
 
   <div class="main">
@@ -684,13 +682,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
 <script>
 // ════════════════════════════════════════
-//  SUPABASE CONFIGURATION
-// ════════════════════════════════════════
-const SUPABASE_URL = 'https://dajdegksemjcammjbjkw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhamRlZ2tzZW1qY2FtbWpiamt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDMyODAsImV4cCI6MjA5MzMxOTI4MH0.q8ukFBXlkHEU8-Jpe3wZChqfMtsaba7-3h6o8_iKnyU';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════
 var currentUser = null;
@@ -698,7 +689,7 @@ var editTarget = null;
 var charts = {};
 
 // ════════════════════════════════════════
-//  STORAGE HELPERS (Local Fallback)
+//  STORAGE HELPERS
 // ════════════════════════════════════════
 function getUsers() {
   try { return JSON.parse(localStorage.getItem('ic_users') || '[]'); } catch(e) { return []; }
@@ -717,306 +708,14 @@ function getDnLogs() {
 }
 function saveDnLogs(l) { localStorage.setItem('ic_dnlogs', JSON.stringify(l)); }
 
-// ════════════════════════════════════════
-//  HASH PASSWORD FUNCTION
-// ════════════════════════════════════════
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
-}
-
-// ════════════════════════════════════════
-//  SUPABASE HELPER FUNCTIONS
-// ════════════════════════════════════════
-async function loadPartsFromSupabase() {
-  try {
-    const { data, error } = await supabase
-      .from('parts')
-      .select('*')
-      .order('id');
-    
-    if (error) throw error;
-    if (data && data.length > 0) {
-      const formattedParts = data.map(p => ({
-        id: p.id,
-        part: p.part,
-        ln: p.ln,
-        portal: p.portal,
-        aging: p.aging,
-        resolvedDn: p.resolved_dn || false
-      }));
-      saveParts(formattedParts);
-      return formattedParts;
-    }
-    return [];
-  } catch (error) {
-    console.error('Error loading parts from Supabase:', error);
-    return [];
-  }
-}
-
-async function savePartToSupabase(part) {
-  try {
-    const { error } = await supabase
-      .from('parts')
-      .upsert({
-        id: part.id,
-        part: part.part,
-        ln: part.ln,
-        portal: part.portal,
-        aging: part.aging,
-        resolved_dn: part.resolvedDn || false,
-        updated_at: new Date()
-      });
-    
-    if (error) throw error;
-    return true;
-  } catch (error) {
-    console.error('Error saving part to Supabase:', error);
-    return false;
-  }
-}
-
-async function deletePartFromSupabase(partId) {
-  try {
-    const { error } = await supabase
-      .from('parts')
-      .delete()
-      .eq('id', partId);
-    
-    if (error) throw error;
-    return true;
-  } catch (error) {
-    console.error('Error deleting part from Supabase:', error);
-    return false;
-  }
-}
-
-async function saveLogToSupabase(log) {
-  try {
-    const { error } = await supabase
-      .from('logs')
-      .insert({
-        time: log.time,
-        msg: log.msg,
-        type: log.type,
-        username: log.user || 'system'
-      });
-    
-    if (error) throw error;
-  } catch (error) {
-    console.error('Error saving log to Supabase:', error);
-  }
-}
-
-async function loadLogsFromSupabase() {
-  try {
-    const { data, error } = await supabase
-      .from('logs')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(200);
-    
-    if (error) throw error;
-    if (data && data.length > 0) {
-      const formattedLogs = data.map(l => ({
-        time: l.time,
-        msg: l.msg,
-        type: l.type,
-        user: l.username
-      }));
-      saveLogs(formattedLogs);
-      return formattedLogs;
-    }
-    return [];
-  } catch (error) {
-    console.error('Error loading logs from Supabase:', error);
-    return [];
-  }
-}
-
-async function saveDnLogToSupabase(log) {
-  try {
-    const { error } = await supabase
-      .from('dn_logs')
-      .insert({
-        time: log.time,
-        msg: log.msg,
-        type: log.type
-      });
-    
-    if (error) throw error;
-  } catch (error) {
-    console.error('Error saving DN log to Supabase:', error);
-  }
-}
-
-// ════════════════════════════════════════
-//  AUTH FUNCTIONS (With Supabase)
-// ════════════════════════════════════════
-async function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  const msgEl = document.getElementById('login-msg');
-  
-  if (!u || !p) {
-    msgEl.textContent = 'Username dan password harus diisi!';
-    return;
-  }
-  
-  try {
-    const hashedPass = await hashPassword(p);
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('username', u)
-      .eq('password', hashedPass);
-    
-    if (error) throw error;
-    
-    if (!data || data.length === 0) {
-      msgEl.textContent = 'Username atau password salah.';
-      return;
-    }
-    
-    currentUser = data[0];
-    msgEl.textContent = '';
-    
-    // Load data dari Supabase
-    await loadPartsFromSupabase();
-    await loadLogsFromSupabase();
-    
-    launchApp();
-  } catch (error) {
-    console.error('Login error:', error);
-    msgEl.textContent = 'Error koneksi ke database.';
-    
-    // Fallback ke localStorage
-    var users = getUsers();
-    var found = null;
-    for (var i = 0; i < users.length; i++) {
-      if (users[i].username === u && users[i].password === p) { found = users[i]; break; }
-    }
-    if (found) {
-      currentUser = found;
-      msgEl.textContent = '';
-      launchApp();
-    }
-  }
-}
-
-async function doRegister() {
-  const u = document.getElementById('reg-user').value.trim();
-  const p = document.getElementById('reg-pass').value;
-  const r = document.getElementById('reg-role').value;
-  const msgEl = document.getElementById('reg-msg');
-  
-  if (!u || p.length < 6) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
-    return;
-  }
-  
-  try {
-    // Cek username sudah ada
-    const { data: existing } = await supabase
-      .from('users')
-      .select('username')
-      .eq('username', u);
-    
-    if (existing && existing.length > 0) {
-      msgEl.style.color = 'var(--red)';
-      msgEl.textContent = 'Username sudah terdaftar.';
-      return;
-    }
-    
-    const hashedPass = await hashPassword(p);
-    const { error } = await supabase
-      .from('users')
-      .insert({
-        username: u,
-        password: hashedPass,
-        role: r
-      });
-    
-    if (error) throw error;
-    
-    msgEl.style.color = 'var(--green)';
-    msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
-    setTimeout(() => switchAuthTab('login'), 1200);
-  } catch (error) {
-    console.error('Register error:', error);
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'Gagal mendaftar: ' + error.message;
-    
-    // Fallback ke localStorage
-    var users = getUsers();
-    for (var i = 0; i < users.length; i++) {
-      if (users[i].username === u) {
-        msgEl.style.color = 'var(--red)';
-        msgEl.textContent = 'Username sudah terdaftar.';
-        return;
-      }
-    }
-    users.push({ username: u, password: p, role: r });
-    saveUsers(users);
-    msgEl.style.color = 'var(--green)';
-    msgEl.textContent = 'Akun berhasil dibuat (local)! Silakan masuk.';
-    setTimeout(() => switchAuthTab('login'), 1200);
-  }
-}
-
-function switchAuthTab(tab) {
-  var isLogin = tab === 'login';
-  document.getElementById('tab-login-btn').classList.toggle('active', isLogin);
-  document.getElementById('tab-register-btn').classList.toggle('active', !isLogin);
-  document.getElementById('login-form').style.display = isLogin ? 'block' : 'none';
-  document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
-}
-
-function launchApp() {
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('user-display').textContent = currentUser.username + ' · ' + currentUser.role;
-  document.getElementById('user-avatar').textContent = currentUser.username[0].toUpperCase();
-  if (currentUser.role === 'Supervisor IC') {
-    document.getElementById('admin-tab').style.display = '';
-  }
-  addLog('Login berhasil sebagai ' + currentUser.username + ' (' + currentUser.role + ')', 'ok');
-  refreshAll();
-  renderAdminTable();
-}
-
-function logout() {
-  addLog('Logout: ' + currentUser.username, 'info');
-  currentUser = null;
-  document.getElementById('auth-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('admin-tab').style.display = 'none';
-}
-
-// ════════════════════════════════════════
-//  LOG FUNCTIONS (With Supabase Sync)
-// ════════════════════════════════════════
 function addLog(msg, type) {
   type = type || 'info';
   var logs = getLogs();
   var now = new Date();
   var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  var logEntry = { time: time, msg: msg, type: type, user: currentUser ? currentUser.username : 'system' };
-  logs.unshift(logEntry);
+  logs.unshift({ time: time, msg: msg, type: type, user: currentUser ? currentUser.username : 'system' });
   if (logs.length > 200) logs.splice(200);
   saveLogs(logs);
-  
-  // Sync to Supabase
-  if (currentUser) {
-    saveLogToSupabase(logEntry);
-  }
-  
   renderLog();
 }
 
@@ -1025,20 +724,13 @@ function addDnLog(msg, type) {
   var logs = getDnLogs();
   var now = new Date();
   var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  var logEntry = { time: time, msg: msg, type: type };
-  logs.unshift(logEntry);
+  logs.unshift({ time: time, msg: msg, type: type });
   saveDnLogs(logs);
-  
-  // Sync to Supabase
-  if (currentUser) {
-    saveDnLogToSupabase(logEntry);
-  }
-  
   renderDnLog();
 }
 
 // ════════════════════════════════════════
-//  SEED DATA (Local Fallback)
+//  SEED DATA
 // ════════════════════════════════════════
 function seedData() {
   if (!getUsers().length) {
@@ -1063,21 +755,101 @@ function seedData() {
 }
 
 // ════════════════════════════════════════
-//  NAVIGATION
+//  AUTH
+// ════════════════════════════════════════
+function switchAuthTab(tab) {
+  var isLogin = tab === 'login';
+  document.getElementById('tab-login-btn').classList.toggle('active', isLogin);
+  document.getElementById('tab-register-btn').classList.toggle('active', !isLogin);
+  document.getElementById('login-form').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
+}
+
+function doLogin() {
+  var u = document.getElementById('login-user').value.trim();
+  var p = document.getElementById('login-pass').value;
+  var users = getUsers();
+  var found = null;
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].username === u && users[i].password === p) { found = users[i]; break; }
+  }
+  if (!found) {
+    document.getElementById('login-msg').textContent = 'Username atau password salah.';
+    return;
+  }
+  currentUser = found;
+  document.getElementById('login-msg').textContent = '';
+  launchApp();
+}
+
+function doRegister() {
+  var u = document.getElementById('reg-user').value.trim();
+  var p = document.getElementById('reg-pass').value;
+  var r = document.getElementById('reg-role').value;
+  var msgEl = document.getElementById('reg-msg');
+  if (!u || p.length < 6) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
+    return;
+  }
+  var users = getUsers();
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].username === u) {
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = 'Username sudah terdaftar.';
+      return;
+    }
+  }
+  users.push({ username: u, password: p, role: r });
+  saveUsers(users);
+  msgEl.style.color = 'var(--green)';
+  msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
+  setTimeout(function() { switchAuthTab('login'); }, 1200);
+}
+
+function launchApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('user-display').textContent = currentUser.username + ' · ' + currentUser.role;
+  document.getElementById('user-avatar').textContent = currentUser.username[0].toUpperCase();
+  if (currentUser.role === 'Supervisor IC') {
+    document.getElementById('admin-tab').style.display = '';
+  }
+  addLog('Login berhasil sebagai ' + currentUser.username + ' (' + currentUser.role + ')', 'ok');
+  refreshAll();
+}
+
+function logout() {
+  addLog('Logout: ' + currentUser.username, 'info');
+  currentUser = null;
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('admin-tab').style.display = 'none';
+}
+
+// ════════════════════════════════════════
+//  NAVIGATION — BUG FIX UTAMA
+//  Sebelumnya menggunakan event.currentTarget yang tidak reliable
+//  Sekarang tab element dikirim langsung sebagai parameter
 // ════════════════════════════════════════
 function showPage(name, tabEl) {
+  // Sembunyikan semua page
   var pages = document.querySelectorAll('.page');
   for (var i = 0; i < pages.length; i++) {
     pages[i].classList.remove('active');
   }
+  // Nonaktifkan semua tab
   var tabs = document.querySelectorAll('.nav-tab');
   for (var j = 0; j < tabs.length; j++) {
     tabs[j].classList.remove('active');
   }
+  // Tampilkan page yang dipilih
   var target = document.getElementById('page-' + name);
   if (target) target.classList.add('active');
+  // Aktifkan tab yang diklik
   if (tabEl) tabEl.classList.add('active');
 
+  // Render konten halaman
   if (name === 'trends') renderTrendCharts();
   if (name === 'bva') renderBvaCharts();
   if (name === 'data') renderTable();
@@ -1085,13 +857,6 @@ function showPage(name, tabEl) {
   if (name === 'admin') renderAdminTable();
   if (name === 'log') renderLog();
 }
-
-// Attach navigation event listeners
-document.querySelectorAll('.nav-tab').forEach(tab => {
-  tab.addEventListener('click', function() {
-    showPage(this.getAttribute('data-page'), this);
-  });
-});
 
 // ════════════════════════════════════════
 //  STATUS LOGIC
@@ -1185,6 +950,7 @@ function renderOverviewCharts() {
     options: defaultBarOpts('Jumlah Part')
   });
 
+  // Recent mismatch table
   var recentMis = parts.filter(function(p) { return getStatus(p) !== 'match'; });
   document.getElementById('badge-recent').textContent = recentMis.length + ' item';
   var tbody = document.getElementById('tbl-recent');
@@ -1428,7 +1194,7 @@ function escalateDn(id) {
   alert('✅ Eskalasi berhasil!\n\nPart ' + p.part + ' telah diteruskan ke Supervisor IC untuk persetujuan auto-reverse DN.\n\nOutstanding DN: ' + (p.ln - p.portal) + '\n\nProses akan berlanjut setelah approval diberikan.');
 }
 
-async function resolveDn(id) {
+function resolveDn(id) {
   var parts = getParts();
   var idx = -1;
   for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { idx = i; break; } }
@@ -1439,12 +1205,6 @@ async function resolveDn(id) {
   parts[idx].ln = parts[idx].portal;
   parts[idx].resolvedDn = true;
   saveParts(parts);
-  
-  // Sync to Supabase
-  if (currentUser) {
-    await savePartToSupabase(parts[idx]);
-  }
-  
   addDnLog('[RESOLVED] Auto-Reverse DN: Part ' + p.part + ' — Qty Infor LN disesuaikan ' + oldLn + ' → ' + p.portal + '. Outstanding DN = 0.', 'ok');
   addLog('DN Negatif diselesaikan: ' + p.part + ' — auto-reverse sukses', 'ok');
   renderDnHandler();
@@ -1471,7 +1231,7 @@ function renderDnLog() {
 // ════════════════════════════════════════
 //  DATA TABLE
 // ════════════════════════════════════════
-async function addPart() {
+function addPart() {
   var part = document.getElementById('inp-part').value.trim();
   var ln = parseInt(document.getElementById('inp-ln').value) || 0;
   var portal = parseInt(document.getElementById('inp-portal').value) || 0;
@@ -1482,15 +1242,8 @@ async function addPart() {
     if (parts[i].part === part) { alert('Part sudah ada!'); return; }
   }
   var id = Date.now();
-  var newPart = { id: id, part: part, ln: ln, portal: portal, aging: aging, resolvedDn: false };
-  parts.push(newPart);
+  parts.push({ id: id, part: part, ln: ln, portal: portal, aging: aging, resolvedDn: false });
   saveParts(parts);
-  
-  // Sync to Supabase
-  if (currentUser) {
-    await savePartToSupabase(newPart);
-  }
-  
   addLog('Part baru ditambahkan: ' + part + ' (LN:' + ln + ', Portal:' + portal + ')', 'ok');
   document.getElementById('inp-part').value = '';
   document.getElementById('inp-ln').value = '';
@@ -1557,7 +1310,7 @@ function closeModal() {
   editTarget = null;
 }
 
-async function saveEdit() {
+function saveEdit() {
   if (!editTarget) return;
   var parts = getParts();
   var idx = -1;
@@ -1568,30 +1321,17 @@ async function saveEdit() {
   parts[idx].portal = parseInt(document.getElementById('edit-portal').value) || 0;
   parts[idx].aging = parseInt(document.getElementById('edit-aging').value) || 0;
   saveParts(parts);
-  
-  // Sync to Supabase
-  if (currentUser) {
-    await savePartToSupabase(parts[idx]);
-  }
-  
   addLog('Edit part ' + parts[idx].part + ': LN ' + old.ln + '→' + parts[idx].ln + ', Portal ' + old.portal + '→' + parts[idx].portal, 'info');
   closeModal();
   renderTable();
   refreshKPI();
 }
 
-async function deletePart(id) {
+function deletePart(id) {
   var parts = getParts();
   var p = null;
   for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
   if (!confirm('Hapus part ' + (p ? p.part : '') + '?')) return;
-  
-  // Delete from Supabase
-  if (currentUser) {
-    await deletePartFromSupabase(id);
-  }
-  
-  // Delete from local storage
   saveParts(getParts().filter(function(x) { return x.id !== id; }));
   addLog('Part dihapus: ' + (p ? p.part : id), 'warn');
   renderTable();
@@ -1614,7 +1354,7 @@ function exportCSV() {
 }
 
 // ════════════════════════════════════════
-//  LOG RENDER
+//  LOG
 // ════════════════════════════════════════
 function renderLog() {
   var logs = getLogs();
@@ -1702,23 +1442,9 @@ function refreshKPI() { renderKPI(); renderOverviewCharts(); }
 function refreshAll() { renderKPI(); renderOverviewCharts(); }
 
 // ════════════════════════════════════════
-//  INITIALIZATION
+//  INIT
 // ════════════════════════════════════════
-// Attach auth button event listeners
-document.getElementById('tab-login-btn').addEventListener('click', () => switchAuthTab('login'));
-document.getElementById('tab-register-btn').addEventListener('click', () => switchAuthTab('register'));
-document.getElementById('login-btn').addEventListener('click', doLogin);
-document.getElementById('register-btn').addEventListener('click', doRegister);
-
-// Seed local data
 seedData();
-
-// Load data from Supabase on page load
-(async function init() {
-  await loadPartsFromSupabase();
-  await loadLogsFromSupabase();
-  refreshAll();
-})();
 </script>
 </body>
 </html>
