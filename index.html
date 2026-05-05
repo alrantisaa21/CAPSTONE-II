@@ -6,6 +6,21 @@
 <title>IC Monitoring Dashboard — PT Inkoasku</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<!-- ══════════════════════════════════════════════
+     SUPABASE CLIENT
+     Ganti nilai di bawah dengan URL & KEY dari:
+     Supabase Dashboard → Settings → API
+     ══════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ⚠️ GANTI INI dengan kredensial project Supabase Anda
+  const SUPABASE_URL  = 'https://XXXXXXXXXXXX.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.XXXXXXXXXXXX';
+
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
 <style>
 :root {
   --bg: #0d1117;
@@ -24,36 +39,13 @@
   --cyan: #79c0ff;
   --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'IBM Plex Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
+body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
 /* ── AUTH SCREEN ── */
-#auth-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
-}
-.auth-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 40px;
-  width: 360px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-}
-.auth-logo {
-  text-align: center;
-  margin-bottom: 28px;
-}
+#auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%); }
+.auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px; width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+.auth-logo { text-align: center; margin-bottom: 28px; }
 .auth-logo .brand { font-size: 22px; font-weight: 700; color: var(--cyan); letter-spacing: -0.5px; }
 .auth-logo .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
 .tab-btns { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg); border-radius: 8px; padding: 4px; }
@@ -61,41 +53,37 @@ body {
 .tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: .5px; }
-.form-group input, .form-group select {
-  width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
-}
+.form-group input, .form-group select { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s; }
 .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
 .btn-primary { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: background .2s; }
 .btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 .auth-msg { margin-top: 12px; font-size: 13px; text-align: center; min-height: 20px; }
+
+/* ── SUPABASE STATUS INDICATOR ── */
+.supabase-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 16px; padding: 8px 12px;
+  border-radius: 6px; border: 1px solid;
+}
+.supabase-status.connected { background: rgba(63,185,80,.08); border-color: rgba(63,185,80,.25); color: var(--green); }
+.supabase-status.disconnected { background: rgba(248,81,73,.08); border-color: rgba(248,81,73,.25); color: var(--red); }
+.supabase-status.checking { background: rgba(121,192,255,.08); border-color: rgba(121,192,255,.25); color: var(--cyan); }
+.status-dot-sb { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 /* ── APP ── */
 #app { display: none; }
 
 /* ── HEADER ── */
-.header {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(13,17,23,.95); backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex; align-items: center; height: 56px; gap: 16px;
-}
+.header { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; height: 56px; gap: 16px; }
 .header-brand { font-weight: 700; font-size: 15px; color: var(--cyan); white-space: nowrap; }
 .header-sub { font-size: 12px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
 .header-sep { flex: 1; }
-.live-pill {
-  display: flex; align-items: center; gap: 6px;
-  background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
-  border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--green);
-}
+.live-pill { display: flex; align-items: center; gap: 6px; background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--green); }
 .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-.user-chip {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; padding: 4px 12px; font-size: 13px;
-}
+.user-chip { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
 .avatar { width: 24px; height: 24px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
 .btn-logout { padding: 6px 14px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 12px; font-family: inherit; transition: all .2s; }
 .btn-logout:hover { border-color: var(--red); color: var(--red); }
@@ -106,7 +94,7 @@ body {
 .nav-tab.active { color: var(--text); border-bottom-color: var(--accent); }
 .nav-tab:hover:not(.active) { color: var(--text); }
 
-/* ── MAIN CONTENT ── */
+/* ── MAIN ── */
 .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
 .page { display: none; }
 .page.active { display: block; }
@@ -114,10 +102,7 @@ body {
 /* ── KPI CARDS ── */
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
 @media(max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} }
-.kpi-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-  padding: 20px; position: relative; overflow: hidden; transition: border-color .2s;
-}
+.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; overflow: hidden; transition: border-color .2s; }
 .kpi-card:hover { border-color: #444; }
 .kpi-card.danger { border-left: 3px solid var(--red); }
 .kpi-card.warning { border-left: 3px solid var(--orange); }
@@ -148,9 +133,7 @@ body {
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
 .chart-grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
 @media(max-width:900px){ .chart-grid,.chart-grid-3{grid-template-columns:1fr} }
-.card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
-}
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .card-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; }
 .chart-wrap { position: relative; height: 220px; }
@@ -202,17 +185,14 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .bva-metric-val.bad { color: var(--red); }
 .bva-metric-val.good { color: var(--green); }
 
-/* ── DN NEGATIVE HANDLER ── */
+/* ── DN NEGATIVE ── */
 .dn-handler { background: rgba(210,153,34,.06); border: 1px solid rgba(210,153,34,.25); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
 .dn-handler-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .dn-handler-icon { font-size: 20px; }
 .dn-handler-title { font-size: 14px; font-weight: 600; color: var(--yellow); }
 .dn-handler-sub { font-size: 12px; color: var(--text-muted); }
 .dn-items { display: flex; flex-direction: column; gap: 10px; }
-.dn-item {
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-  padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-}
+.dn-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .dn-item-info { flex: 1; min-width: 180px; }
 .dn-item-part { font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
 .dn-item-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
@@ -265,24 +245,35 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; }
 .empty-text { font-size: 14px; }
 
-/* ── PROGRESS BAR ── */
-.progress-bar { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+/* ── LOADING SPINNER ── */
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.2); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── SUPABASE INFO BOX ── */
+.sb-info { background: rgba(121,192,255,.06); border: 1px solid rgba(121,192,255,.2); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: var(--cyan); font-family: 'IBM Plex Mono', monospace; }
 </style>
 </head>
 <body>
 
-<!-- AUTH -->
+<!-- ══════════════ AUTH ══════════════ -->
 <div id="auth-screen">
   <div class="auth-box">
     <div class="auth-logo">
       <div class="brand">PAKO GROUP</div>
       <div class="sub">IC MONITORING SYSTEM · PT INKOASKU</div>
     </div>
+
+    <!-- Status koneksi Supabase -->
+    <div class="supabase-status checking" id="sb-status">
+      <div class="status-dot-sb"></div>
+      <span id="sb-status-text">Menghubungkan ke Supabase…</span>
+    </div>
+
     <div class="tab-btns">
       <button class="tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Masuk</button>
       <button class="tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Daftar</button>
     </div>
+
     <!-- LOGIN -->
     <div id="login-form">
       <div class="form-group">
@@ -293,11 +284,13 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         <label>Password</label>
         <input type="password" id="login-pass" placeholder="••••••" autocomplete="current-password"/>
       </div>
-      <button class="btn-primary" onclick="doLogin()">Masuk</button>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">Masuk</button>
       <p class="auth-msg" id="login-msg" style="color:var(--red)"></p>
     </div>
+
     <!-- REGISTER -->
     <div id="register-form" style="display:none">
+      <div class="sb-info">📡 Data akun akan disimpan ke Supabase Database secara real-time.</div>
       <div class="form-group">
         <label>Username Baru</label>
         <input type="text" id="reg-user" placeholder="username" autocomplete="username"/>
@@ -314,22 +307,27 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <option value="Staff PPIC">Staff PPIC</option>
         </select>
       </div>
-      <button class="btn-primary" onclick="doRegister()">Daftar Akun</button>
+      <button class="btn-primary" id="btn-register" onclick="doRegister()">Daftar Akun</button>
       <p class="auth-msg" id="reg-msg" style="color:var(--green)"></p>
     </div>
   </div>
 </div>
 
-<!-- APP -->
+<!-- ══════════════ APP ══════════════ -->
 <div id="app">
-  <!-- HEADER -->
   <div class="header">
     <div>
       <div class="header-brand">PAKO GROUP · IC Monitor</div>
       <div class="header-sub">PT Inkoasku — Inventory Control System</div>
     </div>
     <div class="header-sep"></div>
-    <div class="live-pill"><div class="live-dot"></div><span>LIVE</span></div>
+    <!-- Indikator Supabase di header -->
+    <div class="live-pill" id="sb-live-pill" title="Terhubung ke Supabase">
+      <div class="live-dot"></div><span>SUPABASE LIVE</span>
+    </div>
+    <div class="live-pill" style="margin-left:0">
+      <div class="live-dot"></div><span>LIVE</span>
+    </div>
     <div class="user-chip">
       <div class="avatar" id="user-avatar">U</div>
       <span id="user-display" style="font-size:13px"></span>
@@ -337,7 +335,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
     <button class="btn-logout" onclick="logout()">Keluar</button>
   </div>
 
-  <!-- NAV -->
   <div class="nav-tabs" id="nav-tabs">
     <div class="nav-tab active" data-page="overview" onclick="showPage('overview', this)">📊 Overview</div>
     <div class="nav-tab" data-page="trends" onclick="showPage('trends', this)">📈 Tren &amp; Grafik</div>
@@ -350,7 +347,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
   <div class="main">
 
-    <!-- ══════════════ PAGE: OVERVIEW ══════════════ -->
+    <!-- ══ OVERVIEW ══ -->
     <div class="page active" id="page-overview">
       <div class="kpi-grid">
         <div class="kpi-card danger">
@@ -377,7 +374,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="kpi-desc">part aktif dalam sistem</div>
         </div>
       </div>
-
       <div class="chart-grid">
         <div class="card">
           <div class="card-title">Status Distribusi Part</div>
@@ -390,7 +386,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="chart-wrap"><canvas id="chart-aging"></canvas></div>
         </div>
       </div>
-
       <div class="card">
         <div class="section-header">
           <div class="section-title">Mismatch Terkini</div>
@@ -398,28 +393,19 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         </div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Part Number</th>
-                <th>Qty Infor LN</th>
-                <th>Qty Portal E-WH</th>
-                <th>Selisih</th>
-                <th>Aging (Hari)</th>
-                <th>Status</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Part Number</th><th>Qty Infor LN</th><th>Qty Portal E-WH</th><th>Selisih</th><th>Aging (Hari)</th><th>Status</th></tr></thead>
             <tbody id="tbl-recent"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: TRENDS ══════════════ -->
+    <!-- ══ TRENDS ══ -->
     <div class="page" id="page-trends">
       <div class="chart-grid-3">
         <div class="card">
           <div class="card-title">Tren Mismatch — 7 Hari Terakhir</div>
-          <div class="card-sub">Jumlah item mismatch per hari (simulasi data historis)</div>
+          <div class="card-sub">Jumlah item mismatch per hari</div>
           <div class="chart-wrap-tall"><canvas id="chart-trend-mismatch"></canvas></div>
         </div>
         <div class="card">
@@ -428,7 +414,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="chart-wrap-tall"><canvas id="chart-trend-acc"></canvas></div>
         </div>
       </div>
-
       <div class="chart-grid">
         <div class="card">
           <div class="card-title">Outstanding DN Negatif — Tren Mingguan</div>
@@ -441,31 +426,24 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="chart-wrap"><canvas id="chart-selisih"></canvas></div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-title">Distribusi Status Part — Donut Chart</div>
         <div class="card-sub">Perbandingan proporsi status semua part terdaftar</div>
         <div style="display:flex;gap:32px;align-items:center;flex-wrap:wrap">
-          <div style="width:220px;height:220px;position:relative;flex-shrink:0">
-            <canvas id="chart-donut"></canvas>
-          </div>
+          <div style="width:220px;height:220px;position:relative;flex-shrink:0"><canvas id="chart-donut"></canvas></div>
           <div id="donut-legend" style="display:flex;flex-direction:column;gap:10px"></div>
         </div>
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: BVA ══════════════ -->
+    <!-- ══ BVA ══ -->
     <div class="page" id="page-bva">
       <div class="section-header" style="margin-bottom:20px">
         <div class="section-title">Perbandingan Kinerja: Before vs After Implementasi Dashboard</div>
       </div>
-
       <div class="bva-grid">
         <div class="bva-col before">
-          <div class="bva-label-header">
-            <span class="bva-tag before">BEFORE</span>
-            <span class="bva-title">Sebelum Dashboard (Manual Excel)</span>
-          </div>
+          <div class="bva-label-header"><span class="bva-tag before">BEFORE</span><span class="bva-title">Sebelum Dashboard (Manual Excel)</span></div>
           <div class="bva-metric"><div class="bva-metric-label">Waktu deteksi mismatch/hari</div><div class="bva-metric-val bad">60–90 menit</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Waktu verifikasi DN negatif/hari</div><div class="bva-metric-val bad">20–30 menit</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Proses repetitif manual/hari</div><div class="bva-metric-val bad">30–45 menit</div></div>
@@ -476,15 +454,9 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="bva-metric"><div class="bva-metric-label">Akurasi data (estimasi)</div><div class="bva-metric-val bad">~72%</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Biaya waktu/bulan (est.)</div><div class="bva-metric-val bad">Rp 3.575.000</div></div>
         </div>
-        <div class="bva-divider">
-          <div class="bva-arrow">→</div>
-          <div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;writing-mode:vertical-rl;margin-top:8px">IMPLEMENTASI</div>
-        </div>
+        <div class="bva-divider"><div class="bva-arrow">→</div><div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;writing-mode:vertical-rl;margin-top:8px">IMPLEMENTASI</div></div>
         <div class="bva-col after">
-          <div class="bva-label-header">
-            <span class="bva-tag after">AFTER</span>
-            <span class="bva-title">Setelah Dashboard Monitoring</span>
-          </div>
+          <div class="bva-label-header"><span class="bva-tag after">AFTER</span><span class="bva-title">Setelah Dashboard Monitoring</span></div>
           <div class="bva-metric"><div class="bva-metric-label">Waktu deteksi mismatch/hari</div><div class="bva-metric-val good">&lt;1 menit</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Waktu verifikasi DN negatif/hari</div><div class="bva-metric-val good">~5 menit</div></div>
           <div class="bva-metric"><div class="bva-metric-label">Proses repetitif manual/hari</div><div class="bva-metric-val good">~5 menit</div></div>
@@ -496,7 +468,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="bva-metric"><div class="bva-metric-label">Biaya waktu/bulan (est.)</div><div class="bva-metric-val good">Rp 237.500</div></div>
         </div>
       </div>
-
       <div class="chart-grid">
         <div class="card">
           <div class="card-title">Perbandingan Waktu Proses (menit/hari)</div>
@@ -509,7 +480,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
           <div class="chart-wrap"><canvas id="chart-bva-cost"></canvas></div>
         </div>
       </div>
-
       <div class="kpi-grid">
         <div class="kpi-card success"><div class="kpi-label">Penghematan Waktu</div><div class="kpi-value green">93%</div><div class="kpi-desc">165 → 11 menit/hari</div></div>
         <div class="kpi-card success"><div class="kpi-label">Penghematan Biaya</div><div class="kpi-value green">Rp 3,3 Jt</div><div class="kpi-desc">per bulan (estimasi)</div></div>
@@ -518,87 +488,53 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: DN HANDLER ══════════════ -->
+    <!-- ══ DN HANDLER ══ -->
     <div class="page" id="page-dn-handler">
       <div class="section-header" style="margin-bottom:16px">
         <div class="section-title">Penanganan Outstanding DN Negatif</div>
         <span class="badge yellow" id="dn-count-badge">0 item perlu penanganan</span>
       </div>
-
       <div class="dn-handler">
         <div class="dn-handler-header">
           <div class="dn-handler-icon">⚠️</div>
           <div>
             <div class="dn-handler-title">Mekanisme Auto-Reverse &amp; Eskalasi DN Negatif</div>
-            <div class="dn-handler-sub">Item berikut terdeteksi memiliki Outstanding DN bernilai negatif. Lakukan tindakan penanganan sesuai SOP pembatalan PO.</div>
+            <div class="dn-handler-sub">Item berikut terdeteksi memiliki Outstanding DN bernilai negatif.</div>
           </div>
         </div>
         <div class="dn-items" id="dn-items-list">
           <div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div>
         </div>
       </div>
-
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">📋 SOP Penanganan Outstanding DN Negatif</div>
-        <div class="card-sub">Prosedur standar sesuai rancangan solusi OEM — Approval Workflow</div>
+        <div class="card-sub">Prosedur standar sesuai rancangan solusi OEM</div>
         <div style="display:flex;flex-direction:column;gap:0;margin-top:8px">
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
-            <div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">1</div>
-            <div><div style="font-size:13px;font-weight:600">Identifikasi</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Sistem otomatis menandai DN dengan nilai Outstanding &lt; 0. Alert muncul di dashboard dan log aktivitas.</div></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
-            <div style="width:28px;height:28px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">2</div>
-            <div><div style="font-size:13px;font-weight:600">Verifikasi oleh Staff IC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Staff IC memeriksa apakah PO terkait telah di-cancel atau direvisi. Jika ya, lanjut ke langkah 3.</div></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
-            <div style="width:28px;height:28px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#000">3</div>
-            <div><div style="font-size:13px;font-weight:600">Eskalasi ke Supervisor IC / PPIC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Klik tombol "Eskalasi" → sistem mengirim notifikasi ke Supervisor untuk persetujuan auto-reverse DN.</div></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
-            <div style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">4</div>
-            <div><div style="font-size:13px;font-weight:600">Auto-Reverse DN (Supervisor)</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Supervisor meng-approve reverse → sistem memperbarui Outstanding DN menjadi 0 di Infor LN dan Portal E-Warehouse.</div></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0">
-            <div style="width:28px;height:28px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">5</div>
-            <div><div style="font-size:13px;font-weight:600">Sinkronisasi &amp; Verifikasi Akhir</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Dashboard memperbarui status part, log dicatat otomatis, dan notifikasi dikirim ke semua pihak terkait.</div></div>
-          </div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"><div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">1</div><div><div style="font-size:13px;font-weight:600">Identifikasi</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Sistem otomatis menandai DN dengan nilai Outstanding &lt; 0.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"><div style="width:28px;height:28px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">2</div><div><div style="font-size:13px;font-weight:600">Verifikasi oleh Staff IC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Staff IC memeriksa apakah PO terkait telah di-cancel atau direvisi.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"><div style="width:28px;height:28px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#000">3</div><div><div style="font-size:13px;font-weight:600">Eskalasi ke Supervisor IC / PPIC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Klik tombol "Eskalasi" → sistem mengirim notifikasi ke Supervisor.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"><div style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">4</div><div><div style="font-size:13px;font-weight:600">Auto-Reverse DN (Supervisor)</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Supervisor meng-approve reverse → sistem memperbarui Outstanding DN ke 0.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0"><div style="width:28px;height:28px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">5</div><div><div style="font-size:13px;font-weight:600">Sinkronisasi &amp; Verifikasi Akhir</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Dashboard memperbarui status part, log dicatat otomatis.</div></div></div>
         </div>
       </div>
-
       <div class="card">
         <div class="section-header"><div class="section-title">Log Penanganan DN Negatif</div></div>
         <div class="log-container" id="dn-log"></div>
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: DATA ══════════════ -->
+    <!-- ══ DATA ══ -->
     <div class="page" id="page-data">
       <div class="card" style="margin-bottom:20px">
         <div class="section-title" style="margin-bottom:16px">Tambah / Import Data Part</div>
         <div class="input-grid">
-          <div class="input-group">
-            <label>Part Number</label>
-            <input type="text" id="inp-part" placeholder="STL000XXX"/>
-          </div>
-          <div class="input-group">
-            <label>Qty Infor LN</label>
-            <input type="number" id="inp-ln" placeholder="0"/>
-          </div>
-          <div class="input-group">
-            <label>Qty Portal E-WH</label>
-            <input type="number" id="inp-portal" placeholder="0"/>
-          </div>
-          <div class="input-group">
-            <label>Aging (Hari)</label>
-            <input type="number" id="inp-aging" placeholder="0" min="0"/>
-          </div>
-          <div class="input-group">
-            <label>&nbsp;</label>
-            <button class="btn-sm btn-accent" onclick="addPart()">+ Tambah</button>
-          </div>
+          <div class="input-group"><label>Part Number</label><input type="text" id="inp-part" placeholder="STL000XXX"/></div>
+          <div class="input-group"><label>Qty Infor LN</label><input type="number" id="inp-ln" placeholder="0"/></div>
+          <div class="input-group"><label>Qty Portal E-WH</label><input type="number" id="inp-portal" placeholder="0"/></div>
+          <div class="input-group"><label>Aging (Hari)</label><input type="number" id="inp-aging" placeholder="0" min="0"/></div>
+          <div class="input-group"><label>&nbsp;</label><button class="btn-sm btn-accent" onclick="addPart()">+ Tambah</button></div>
         </div>
       </div>
-
       <div class="card">
         <div class="filter-bar">
           <select id="filter-status" onchange="renderTable()">
@@ -614,24 +550,14 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         </div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Part Number</th>
-                <th>Qty Infor LN</th>
-                <th>Qty Portal E-WH</th>
-                <th>Selisih</th>
-                <th>Aging (Hari)</th>
-                <th>Status</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Part Number</th><th>Qty Infor LN</th><th>Qty Portal E-WH</th><th>Selisih</th><th>Aging (Hari)</th><th>Status</th><th>Aksi</th></tr></thead>
             <tbody id="tbl-main"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: LOG ══════════════ -->
+    <!-- ══ LOG ══ -->
     <div class="page" id="page-log">
       <div class="card">
         <div class="section-header">
@@ -644,26 +570,30 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: ADMIN ══════════════ -->
+    <!-- ══ ADMIN ══ -->
     <div class="page" id="page-admin">
+      <div class="card" style="margin-bottom:20px">
+        <div class="sb-info">
+          📡 Data pengguna diambil langsung dari <strong>Supabase Database</strong> secara real-time.
+          Setiap akun yang mendaftar tersimpan di tabel <code>ic_users</code>.
+        </div>
+      </div>
       <div class="card">
         <div class="section-header">
-          <div class="section-title">Manajemen Pengguna</div>
-          <button class="btn-sm btn-ghost" onclick="renderAdminTable()">↻ Refresh</button>
+          <div class="section-title">Manajemen Pengguna (Supabase)</div>
+          <button class="btn-sm btn-ghost" onclick="renderAdminTable()">↻ Refresh dari DB</button>
         </div>
         <div class="table-wrap">
           <table class="user-table">
-            <thead>
-              <tr><th>Username</th><th>Role</th><th>Aksi</th></tr>
-            </thead>
+            <thead><tr><th>#</th><th>Username</th><th>Role</th><th>Terdaftar</th><th>Aksi</th></tr></thead>
             <tbody id="tbl-admin"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-  </div><!-- /main -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
@@ -680,82 +610,142 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     JAVASCRIPT UTAMA
+     ══════════════════════════════════════ -->
 <script>
 // ════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════
 var currentUser = null;
-var editTarget = null;
-var charts = {};
+var editTarget  = null;
+var charts      = {};
 
 // ════════════════════════════════════════
-//  STORAGE HELPERS
+//  SUPABASE — CEK KONEKSI
 // ════════════════════════════════════════
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem('ic_users') || '[]'); } catch(e) { return []; }
+async function checkSupabaseConnection() {
+  var statusEl = document.getElementById('sb-status');
+  var textEl   = document.getElementById('sb-status-text');
+  try {
+    // Coba query ringan ke tabel ic_users
+    var { error } = await supabase.from('ic_users').select('id').limit(1);
+    if (error) throw error;
+    statusEl.className = 'supabase-status connected';
+    textEl.textContent  = '✓ Terhubung ke Supabase · ic_users';
+  } catch (err) {
+    statusEl.className = 'supabase-status disconnected';
+    textEl.textContent  = '✗ Gagal terhubung: ' + (err.message || 'Periksa URL & KEY');
+    console.error('Supabase error:', err);
+  }
 }
-function saveUsers(u) { localStorage.setItem('ic_users', JSON.stringify(u)); }
-function getParts() {
-  try { return JSON.parse(localStorage.getItem('ic_parts') || '[]'); } catch(e) { return []; }
+
+// ════════════════════════════════════════
+//  SUPABASE — USER OPERATIONS
+// ════════════════════════════════════════
+
+/** Ambil semua user dari Supabase */
+async function sbGetUsers() {
+  var { data, error } = await supabase
+    .from('ic_users')
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) { console.error('sbGetUsers:', error); return []; }
+  return data || [];
 }
+
+/** Cek user login (SELECT by username + password) */
+async function sbFindUser(username, password) {
+  var { data, error } = await supabase
+    .from('ic_users')
+    .select('*')
+    .eq('username', username)
+    .eq('password', password)
+    .single();
+  if (error) return null;
+  return data;
+}
+
+/** Cek apakah username sudah ada */
+async function sbUsernameExists(username) {
+  var { data } = await supabase
+    .from('ic_users')
+    .select('id')
+    .eq('username', username)
+    .single();
+  return !!data;
+}
+
+/** Daftarkan user baru ke Supabase */
+async function sbRegisterUser(username, password, role) {
+  var { data, error } = await supabase
+    .from('ic_users')
+    .insert([{ username, password, role }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** Hapus user dari Supabase */
+async function sbDeleteUser(id) {
+  var { error } = await supabase
+    .from('ic_users')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}
+
+// ════════════════════════════════════════
+//  LOCAL STORAGE — PARTS & LOGS
+//  (tetap menggunakan localStorage karena
+//   data part adalah simulasi lokal)
+// ════════════════════════════════════════
+function getParts() { try { return JSON.parse(localStorage.getItem('ic_parts') || '[]'); } catch(e) { return []; } }
 function saveParts(p) { localStorage.setItem('ic_parts', JSON.stringify(p)); }
-function getLogs() {
-  try { return JSON.parse(localStorage.getItem('ic_logs') || '[]'); } catch(e) { return []; }
-}
+function getLogs() { try { return JSON.parse(localStorage.getItem('ic_logs') || '[]'); } catch(e) { return []; } }
 function saveLogs(l) { localStorage.setItem('ic_logs', JSON.stringify(l)); }
-function getDnLogs() {
-  try { return JSON.parse(localStorage.getItem('ic_dnlogs') || '[]'); } catch(e) { return []; }
-}
+function getDnLogs() { try { return JSON.parse(localStorage.getItem('ic_dnlogs') || '[]'); } catch(e) { return []; } }
 function saveDnLogs(l) { localStorage.setItem('ic_dnlogs', JSON.stringify(l)); }
 
 function addLog(msg, type) {
   type = type || 'info';
   var logs = getLogs();
-  var now = new Date();
-  var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  logs.unshift({ time: time, msg: msg, type: type, user: currentUser ? currentUser.username : 'system' });
+  var time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  logs.unshift({ time, msg, type, user: currentUser ? currentUser.username : 'system' });
   if (logs.length > 200) logs.splice(200);
   saveLogs(logs);
   renderLog();
 }
-
 function addDnLog(msg, type) {
   type = type || 'warn';
   var logs = getDnLogs();
-  var now = new Date();
-  var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  logs.unshift({ time: time, msg: msg, type: type });
+  var time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  logs.unshift({ time, msg, type });
   saveDnLogs(logs);
   renderDnLog();
 }
 
 // ════════════════════════════════════════
-//  SEED DATA
+//  SEED PARTS (hanya jika kosong)
 // ════════════════════════════════════════
-function seedData() {
-  if (!getUsers().length) {
-    saveUsers([
-      { username: 'admin', password: 'admin123', role: 'Supervisor IC' },
-      { username: 'ic_staff', password: 'staff123', role: 'Staff IC' },
-      { username: 'ppic', password: 'ppic123', role: 'Staff PPIC' },
-    ]);
-  }
+function seedParts() {
   if (!getParts().length) {
     saveParts([
-      { id: 1, part: 'CDICAT00-000-0001', ln: 300, portal: 350, aging: 5, resolvedDn: false },
-      { id: 2, part: 'CDICAT00-000-0002', ln: 1200, portal: 200, aging: 8, resolvedDn: false },
-      { id: 3, part: 'CDIBOX00-000-0021', ln: 14, portal: 14, aging: 0, resolvedDn: false },
-      { id: 4, part: 'CINCAR00-000-0012', ln: 100, portal: 120, aging: 3, resolvedDn: false },
-      { id: 5, part: 'CDICAR00-000-0001', ln: 650, portal: 650, aging: 0, resolvedDn: false },
-      { id: 6, part: 'STL000190-CONS', ln: 460, portal: 340, aging: 6, resolvedDn: false },
-      { id: 7, part: 'STL000142-CED', ln: 0, portal: 50, aging: 2, resolvedDn: false },
-      { id: 8, part: 'STL000331-BND', ln: 500, portal: 500, aging: 0, resolvedDn: false },
+      { id:1, part:'CDICAT00-000-0001', ln:300,  portal:350, aging:5, resolvedDn:false },
+      { id:2, part:'CDICAT00-000-0002', ln:1200, portal:200, aging:8, resolvedDn:false },
+      { id:3, part:'CDIBOX00-000-0021', ln:14,   portal:14,  aging:0, resolvedDn:false },
+      { id:4, part:'CINCAR00-000-0012', ln:100,  portal:120, aging:3, resolvedDn:false },
+      { id:5, part:'CDICAR00-000-0001', ln:650,  portal:650, aging:0, resolvedDn:false },
+      { id:6, part:'STL000190-CONS',    ln:460,  portal:340, aging:6, resolvedDn:false },
+      { id:7, part:'STL000142-CED',     ln:0,    portal:50,  aging:2, resolvedDn:false },
+      { id:8, part:'STL000331-BND',     ln:500,  portal:500, aging:0, resolvedDn:false },
     ]);
   }
 }
 
 // ════════════════════════════════════════
-//  AUTH
+//  AUTH — SUPABASE VERSION
 // ════════════════════════════════════════
 function switchAuthTab(tab) {
   var isLogin = tab === 'login';
@@ -765,46 +755,76 @@ function switchAuthTab(tab) {
   document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
 }
 
-function doLogin() {
+async function doLogin() {
   var u = document.getElementById('login-user').value.trim();
   var p = document.getElementById('login-pass').value;
-  var users = getUsers();
-  var found = null;
-  for (var i = 0; i < users.length; i++) {
-    if (users[i].username === u && users[i].password === p) { found = users[i]; break; }
+  var msgEl = document.getElementById('login-msg');
+  var btn   = document.getElementById('btn-login');
+
+  if (!u || !p) { msgEl.textContent = 'Username dan password wajib diisi.'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Memeriksa…';
+  msgEl.textContent = '';
+
+  try {
+    var found = await sbFindUser(u, p);
+    if (!found) {
+      msgEl.textContent = 'Username atau password salah.';
+      return;
+    }
+    currentUser = found;
+    addLog('Login berhasil sebagai ' + currentUser.username + ' (' + currentUser.role + ')', 'ok');
+    launchApp();
+  } catch (err) {
+    msgEl.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Masuk';
   }
-  if (!found) {
-    document.getElementById('login-msg').textContent = 'Username atau password salah.';
-    return;
-  }
-  currentUser = found;
-  document.getElementById('login-msg').textContent = '';
-  launchApp();
 }
 
-function doRegister() {
-  var u = document.getElementById('reg-user').value.trim();
-  var p = document.getElementById('reg-pass').value;
-  var r = document.getElementById('reg-role').value;
+async function doRegister() {
+  var u   = document.getElementById('reg-user').value.trim();
+  var p   = document.getElementById('reg-pass').value;
+  var r   = document.getElementById('reg-role').value;
   var msgEl = document.getElementById('reg-msg');
+  var btn   = document.getElementById('btn-register');
+
   if (!u || p.length < 6) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
     return;
   }
-  var users = getUsers();
-  for (var i = 0; i < users.length; i++) {
-    if (users[i].username === u) {
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Mendaftarkan…';
+  msgEl.textContent = '';
+
+  try {
+    // Cek duplikat username
+    var exists = await sbUsernameExists(u);
+    if (exists) {
       msgEl.style.color = 'var(--red)';
-      msgEl.textContent = 'Username sudah terdaftar.';
+      msgEl.textContent = 'Username sudah terdaftar di database.';
       return;
     }
+
+    // Simpan ke Supabase
+    await sbRegisterUser(u, p, r);
+
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✓ Akun berhasil dibuat & tersimpan di Supabase! Silakan masuk.';
+    addLog('Akun baru terdaftar via Supabase: ' + u + ' (' + r + ')', 'ok');
+    setTimeout(() => { switchAuthTab('login'); }, 1500);
+
+  } catch (err) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Gagal mendaftar: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Daftar Akun';
   }
-  users.push({ username: u, password: p, role: r });
-  saveUsers(users);
-  msgEl.style.color = 'var(--green)';
-  msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
-  setTimeout(function() { switchAuthTab('login'); }, 1200);
 }
 
 function launchApp() {
@@ -815,7 +835,6 @@ function launchApp() {
   if (currentUser.role === 'Supervisor IC') {
     document.getElementById('admin-tab').style.display = '';
   }
-  addLog('Login berhasil sebagai ' + currentUser.username + ' (' + currentUser.role + ')', 'ok');
   refreshAll();
 }
 
@@ -828,34 +847,20 @@ function logout() {
 }
 
 // ════════════════════════════════════════
-//  NAVIGATION — BUG FIX UTAMA
-//  Sebelumnya menggunakan event.currentTarget yang tidak reliable
-//  Sekarang tab element dikirim langsung sebagai parameter
+//  NAVIGATION
 // ════════════════════════════════════════
 function showPage(name, tabEl) {
-  // Sembunyikan semua page
-  var pages = document.querySelectorAll('.page');
-  for (var i = 0; i < pages.length; i++) {
-    pages[i].classList.remove('active');
-  }
-  // Nonaktifkan semua tab
-  var tabs = document.querySelectorAll('.nav-tab');
-  for (var j = 0; j < tabs.length; j++) {
-    tabs[j].classList.remove('active');
-  }
-  // Tampilkan page yang dipilih
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   var target = document.getElementById('page-' + name);
   if (target) target.classList.add('active');
-  // Aktifkan tab yang diklik
   if (tabEl) tabEl.classList.add('active');
-
-  // Render konten halaman
-  if (name === 'trends') renderTrendCharts();
-  if (name === 'bva') renderBvaCharts();
-  if (name === 'data') renderTable();
+  if (name === 'trends')     renderTrendCharts();
+  if (name === 'bva')        renderBvaCharts();
+  if (name === 'data')       renderTable();
   if (name === 'dn-handler') renderDnHandler();
-  if (name === 'admin') renderAdminTable();
-  if (name === 'log') renderLog();
+  if (name === 'admin')      renderAdminTable();
+  if (name === 'log')        renderLog();
 }
 
 // ════════════════════════════════════════
@@ -868,7 +873,7 @@ function getStatus(p) {
 }
 function statusLabel(s) {
   if (s === 'mismatch') return '<span class="status-pill mismatch"><span class="status-dot"></span>Mismatch</span>';
-  if (s === 'neg') return '<span class="status-pill neg"><span class="status-dot"></span>DN Negatif</span>';
+  if (s === 'neg')      return '<span class="status-pill neg"><span class="status-dot"></span>DN Negatif</span>';
   return '<span class="status-pill match"><span class="status-dot"></span>Match</span>';
 }
 
@@ -878,27 +883,27 @@ function statusLabel(s) {
 function calcKPI() {
   var parts = getParts();
   var mismatch = 0, neg = 0, match = 0;
-  for (var i = 0; i < parts.length; i++) {
-    var s = getStatus(parts[i]);
+  parts.forEach(p => {
+    var s = getStatus(p);
     if (s === 'mismatch') mismatch++;
     else if (s === 'neg') neg++;
     else match++;
-  }
+  });
   var acc = parts.length ? ((match / parts.length) * 100).toFixed(1) + '%' : '—';
-  return { mismatch: mismatch, neg: neg, match: match, total: parts.length, acc: acc };
+  return { mismatch, neg, match, total: parts.length, acc };
 }
 
 function renderKPI() {
   var k = calcKPI();
   document.getElementById('kpi-mismatch').textContent = k.mismatch;
-  document.getElementById('kpi-neg').textContent = k.neg;
-  document.getElementById('kpi-acc').textContent = k.acc;
-  document.getElementById('kpi-total').textContent = k.total;
+  document.getElementById('kpi-neg').textContent      = k.neg;
+  document.getElementById('kpi-acc').textContent      = k.acc;
+  document.getElementById('kpi-total').textContent    = k.total;
   document.getElementById('kpi-mismatch-trend').textContent = k.mismatch > 0 ? '▲ ' + k.mismatch + ' item perlu perhatian' : '';
   var negTrend = document.getElementById('kpi-neg-trend');
   negTrend.textContent = k.neg > 0 ? '⚠ ' + k.neg + ' perlu penanganan segera' : '✓ Tidak ada DN negatif';
   negTrend.className = 'kpi-trend ' + (k.neg > 0 ? 'up' : 'down');
-  document.getElementById('kpi-acc-trend').textContent = k.acc !== '—' ? 'Target: ≥95%' : '';
+  document.getElementById('kpi-acc-trend').textContent = 'Target: ≥95%';
 }
 
 // ════════════════════════════════════════
@@ -906,250 +911,67 @@ function renderKPI() {
 // ════════════════════════════════════════
 function renderOverviewCharts() {
   var parts = getParts();
-  var mismatch = 0, neg = 0, match = 0;
-  var a0 = 0, a1 = 0, a2 = 0, a3 = 0;
-  for (var i = 0; i < parts.length; i++) {
-    var s = getStatus(parts[i]);
+  var mismatch = 0, neg = 0, match = 0, a0 = 0, a1 = 0, a2 = 0, a3 = 0;
+  parts.forEach(p => {
+    var s = getStatus(p);
     if (s === 'mismatch') mismatch++;
     else if (s === 'neg') neg++;
     else match++;
-    var ag = parts[i].aging;
-    if (ag === 0) a0++;
-    else if (ag <= 3) a1++;
-    else if (ag <= 7) a2++;
-    else a3++;
-  }
-
+    var ag = p.aging;
+    if (ag === 0) a0++; else if (ag <= 3) a1++; else if (ag <= 7) a2++; else a3++;
+  });
   destroyChart('chart-dist');
   charts['chart-dist'] = new Chart(document.getElementById('chart-dist'), {
-    type: 'bar',
-    data: {
-      labels: ['Match', 'Mismatch', 'DN Negatif'],
-      datasets: [{
-        data: [match, mismatch, neg],
-        backgroundColor: ['rgba(63,185,80,.7)', 'rgba(248,81,73,.7)', 'rgba(210,153,34,.7)'],
-        borderColor: ['#3fb950', '#f85149', '#d29922'],
-        borderWidth: 1, borderRadius: 6,
-      }]
-    },
-    options: defaultBarOpts('Jumlah Part')
+    type:'bar', data:{ labels:['Match','Mismatch','DN Negatif'], datasets:[{ data:[match,mismatch,neg], backgroundColor:['rgba(63,185,80,.7)','rgba(248,81,73,.7)','rgba(210,153,34,.7)'], borderColor:['#3fb950','#f85149','#d29922'], borderWidth:1, borderRadius:6 }] }, options:defaultBarOpts('Jumlah Part')
   });
-
   destroyChart('chart-aging');
   charts['chart-aging'] = new Chart(document.getElementById('chart-aging'), {
-    type: 'bar',
-    data: {
-      labels: ['0 hari', '1-3 hari', '4-7 hari', '>7 hari'],
-      datasets: [{
-        data: [a0, a1, a2, a3],
-        backgroundColor: ['rgba(63,185,80,.7)', 'rgba(121,192,255,.7)', 'rgba(210,153,34,.7)', 'rgba(248,81,73,.7)'],
-        borderColor: ['#3fb950', '#79c0ff', '#d29922', '#f85149'],
-        borderWidth: 1, borderRadius: 6,
-      }]
-    },
-    options: defaultBarOpts('Jumlah Part')
+    type:'bar', data:{ labels:['0 hari','1-3 hari','4-7 hari','>7 hari'], datasets:[{ data:[a0,a1,a2,a3], backgroundColor:['rgba(63,185,80,.7)','rgba(121,192,255,.7)','rgba(210,153,34,.7)','rgba(248,81,73,.7)'], borderColor:['#3fb950','#79c0ff','#d29922','#f85149'], borderWidth:1, borderRadius:6 }] }, options:defaultBarOpts('Jumlah Part')
   });
-
-  // Recent mismatch table
-  var recentMis = parts.filter(function(p) { return getStatus(p) !== 'match'; });
+  var recentMis = parts.filter(p => getStatus(p) !== 'match');
   document.getElementById('badge-recent').textContent = recentMis.length + ' item';
   var tbody = document.getElementById('tbl-recent');
-  if (!recentMis.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">Semua data sinkron ✅</td></tr>';
-    return;
-  }
-  tbody.innerHTML = recentMis.map(function(p) {
-    var s = getStatus(p);
-    var diff = p.ln - p.portal;
-    return '<tr>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600">' + p.part + '</td>' +
-      '<td>' + p.ln.toLocaleString() + '</td>' +
-      '<td>' + p.portal.toLocaleString() + '</td>' +
-      '<td style="color:' + (Math.abs(diff) > 0 ? 'var(--red)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td>' +
-      '<td><span style="color:' + (p.aging > 3 ? 'var(--orange)' : 'var(--text)') + '">' + p.aging + '</span></td>' +
-      '<td>' + statusLabel(s) + '</td>' +
-    '</tr>';
+  if (!recentMis.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">Semua data sinkron ✅</td></tr>'; return; }
+  tbody.innerHTML = recentMis.map(p => {
+    var s = getStatus(p); var diff = p.ln - p.portal;
+    return `<tr><td style="font-family:'IBM Plex Mono',monospace;font-weight:600">${p.part}</td><td>${p.ln.toLocaleString()}</td><td>${p.portal.toLocaleString()}</td><td style="color:${Math.abs(diff)>0?'var(--red)':'var(--green)'}">${diff>0?'+':''}${diff.toLocaleString()}</td><td><span style="color:${p.aging>3?'var(--orange)':'var(--text)'}">${p.aging}</span></td><td>${statusLabel(s)}</td></tr>`;
   }).join('');
 }
 
 // ════════════════════════════════════════
 //  TREND CHARTS
 // ════════════════════════════════════════
-var days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-
+var days = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
 function genTrendData(base, len, variance) {
-  len = len || 7; variance = variance || 3;
-  var result = [];
-  for (var i = 0; i < len; i++) {
-    result.push(Math.max(0, base + Math.round((Math.random() - 0.4) * variance * 2) - i));
-  }
-  return result;
+  len = len||7; variance = variance||3;
+  return Array.from({length:len}, (_,i) => Math.max(0, base + Math.round((Math.random()-.4)*variance*2) - i));
 }
-
 function renderTrendCharts() {
-  var k = calcKPI();
-  var parts = getParts();
-
+  var k = calcKPI(); var parts = getParts();
   destroyChart('chart-trend-mismatch');
-  charts['chart-trend-mismatch'] = new Chart(document.getElementById('chart-trend-mismatch'), {
-    type: 'line',
-    data: {
-      labels: days,
-      datasets: [{
-        label: 'Mismatch',
-        data: genTrendData(k.mismatch + 3),
-        borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,.12)',
-        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#f85149',
-      }]
-    },
-    options: defaultLineOpts('Jumlah Item')
-  });
-
+  charts['chart-trend-mismatch'] = new Chart(document.getElementById('chart-trend-mismatch'), { type:'line', data:{ labels:days, datasets:[{ label:'Mismatch', data:genTrendData(k.mismatch+3), borderColor:'#f85149', backgroundColor:'rgba(248,81,73,.12)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#f85149' }] }, options:defaultLineOpts('Jumlah Item') });
   destroyChart('chart-trend-acc');
-  var aData = [];
-  for (var i = 0; i < 7; i++) {
-    aData.push(parseFloat(Math.min(99.9, 70 + i * 2.5 + Math.random() * 3).toFixed(1)));
-  }
-  charts['chart-trend-acc'] = new Chart(document.getElementById('chart-trend-acc'), {
-    type: 'line',
-    data: {
-      labels: days,
-      datasets: [{
-        label: 'Akurasi (%)',
-        data: aData,
-        borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,.12)',
-        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#3fb950',
-      }]
-    },
-    options: defaultLineOpts('Akurasi (%)')
-  });
-
+  charts['chart-trend-acc'] = new Chart(document.getElementById('chart-trend-acc'), { type:'line', data:{ labels:days, datasets:[{ label:'Akurasi (%)', data:Array.from({length:7},(_,i)=>parseFloat(Math.min(99.9,70+i*2.5+Math.random()*3).toFixed(1))), borderColor:'#3fb950', backgroundColor:'rgba(63,185,80,.12)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#3fb950' }] }, options:defaultLineOpts('Akurasi (%)') });
   destroyChart('chart-trend-neg');
-  charts['chart-trend-neg'] = new Chart(document.getElementById('chart-trend-neg'), {
-    type: 'bar',
-    data: {
-      labels: days,
-      datasets: [{
-        label: 'DN Negatif',
-        data: genTrendData(k.neg + 2, 7, 2),
-        backgroundColor: 'rgba(210,153,34,.6)', borderColor: '#d29922', borderWidth: 1, borderRadius: 4,
-      }]
-    },
-    options: defaultBarOpts('Jumlah Item')
-  });
-
-  var top6 = parts.filter(function(p) { return p.ln !== p.portal; })
-    .sort(function(a, b) { return Math.abs(b.ln - b.portal) - Math.abs(a.ln - a.portal); })
-    .slice(0, 6);
+  charts['chart-trend-neg'] = new Chart(document.getElementById('chart-trend-neg'), { type:'bar', data:{ labels:days, datasets:[{ label:'DN Negatif', data:genTrendData(k.neg+2,7,2), backgroundColor:'rgba(210,153,34,.6)', borderColor:'#d29922', borderWidth:1, borderRadius:4 }] }, options:defaultBarOpts('Jumlah Item') });
+  var top6 = parts.filter(p=>p.ln!==p.portal).sort((a,b)=>Math.abs(b.ln-b.portal)-Math.abs(a.ln-a.portal)).slice(0,6);
   destroyChart('chart-selisih');
-  charts['chart-selisih'] = new Chart(document.getElementById('chart-selisih'), {
-    type: 'bar',
-    data: {
-      labels: top6.map(function(p) { return p.part.slice(-8); }),
-      datasets: [{
-        label: 'Selisih (Infor LN - Portal)',
-        data: top6.map(function(p) { return p.ln - p.portal; }),
-        backgroundColor: top6.map(function(p) { return (p.ln - p.portal) < 0 ? 'rgba(248,81,73,.7)' : 'rgba(121,192,255,.7)'; }),
-        borderColor: top6.map(function(p) { return (p.ln - p.portal) < 0 ? '#f85149' : '#79c0ff'; }),
-        borderWidth: 1, borderRadius: 4,
-      }]
-    },
-    options: defaultBarOpts('Selisih Qty')
-  });
-
-  var mis = 0, neg = 0, mat = 0;
-  for (var j = 0; j < parts.length; j++) {
-    var st = getStatus(parts[j]);
-    if (st === 'mismatch') mis++;
-    else if (st === 'neg') neg++;
-    else mat++;
-  }
-  var total = mat + mis + neg || 1;
+  charts['chart-selisih'] = new Chart(document.getElementById('chart-selisih'), { type:'bar', data:{ labels:top6.map(p=>p.part.slice(-8)), datasets:[{ label:'Selisih', data:top6.map(p=>p.ln-p.portal), backgroundColor:top6.map(p=>(p.ln-p.portal)<0?'rgba(248,81,73,.7)':'rgba(121,192,255,.7)'), borderColor:top6.map(p=>(p.ln-p.portal)<0?'#f85149':'#79c0ff'), borderWidth:1, borderRadius:4 }] }, options:defaultBarOpts('Selisih Qty') });
+  var { match:mat, mismatch:mis, neg } = calcKPI(); var total = mat+mis+neg||1;
   destroyChart('chart-donut');
-  charts['chart-donut'] = new Chart(document.getElementById('chart-donut'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Match', 'Mismatch', 'DN Negatif'],
-      datasets: [{
-        data: [mat, mis, neg],
-        backgroundColor: ['rgba(63,185,80,.8)', 'rgba(248,81,73,.8)', 'rgba(210,153,34,.8)'],
-        borderColor: ['#3fb950', '#f85149', '#d29922'],
-        borderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, cutout: '65%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: function(c) { return c.label + ': ' + c.raw + ' (' + ((c.raw / total) * 100).toFixed(1) + '%)'; } } }
-      }
-    }
-  });
-
-  var legData = [
-    { label: 'Match', color: '#3fb950', val: mat },
-    { label: 'Mismatch', color: '#f85149', val: mis },
-    { label: 'DN Negatif', color: '#d29922', val: neg }
-  ];
-  document.getElementById('donut-legend').innerHTML = legData.map(function(d) {
-    return '<div style="display:flex;align-items:center;gap:10px">' +
-      '<div style="width:12px;height:12px;background:' + d.color + ';border-radius:3px;flex-shrink:0"></div>' +
-      '<div><div style="font-size:13px;font-weight:600">' + d.label + '</div>' +
-      '<div style="font-size:11px;color:var(--text-muted);font-family:\'IBM Plex Mono\',monospace">' + d.val + ' part · ' + ((d.val / total) * 100).toFixed(1) + '%</div></div>' +
-    '</div>';
-  }).join('');
+  charts['chart-donut'] = new Chart(document.getElementById('chart-donut'), { type:'doughnut', data:{ labels:['Match','Mismatch','DN Negatif'], datasets:[{ data:[mat,mis,neg], backgroundColor:['rgba(63,185,80,.8)','rgba(248,81,73,.8)','rgba(210,153,34,.8)'], borderColor:['#3fb950','#f85149','#d29922'], borderWidth:2 }] }, options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} (${((c.raw/total)*100).toFixed(1)}%)`}} } } });
+  document.getElementById('donut-legend').innerHTML = [['Match','#3fb950',mat],['Mismatch','#f85149',mis],['DN Negatif','#d29922',neg]].map(([l,c,v])=>`<div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:${c};border-radius:3px;flex-shrink:0"></div><div><div style="font-size:13px;font-weight:600">${l}</div><div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">${v} part · ${((v/total)*100).toFixed(1)}%</div></div></div>`).join('');
 }
 
 // ════════════════════════════════════════
 //  BVA CHARTS
 // ════════════════════════════════════════
 function renderBvaCharts() {
-  var cats = ['Deteksi Mismatch', 'Verifikasi DN Neg', 'Proses Manual'];
-  var before = [75, 25, 37.5];
-  var after = [1, 5, 5];
-
+  var cats = ['Deteksi Mismatch','Verifikasi DN Neg','Proses Manual'];
   destroyChart('chart-bva-time');
-  charts['chart-bva-time'] = new Chart(document.getElementById('chart-bva-time'), {
-    type: 'bar',
-    data: {
-      labels: cats,
-      datasets: [
-        { label: 'Before (menit)', data: before, backgroundColor: 'rgba(248,81,73,.7)', borderColor: '#f85149', borderWidth: 1, borderRadius: 4 },
-        { label: 'After (menit)', data: after, backgroundColor: 'rgba(63,185,80,.7)', borderColor: '#3fb950', borderWidth: 1, borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#e6edf3', font: { size: 12, family: 'IBM Plex Sans' } } }, tooltip: { mode: 'index' } },
-      scales: {
-        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
-        y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Menit/Hari', color: '#7d8590', font: { size: 11 } } }
-      }
-    }
-  });
-
+  charts['chart-bva-time'] = new Chart(document.getElementById('chart-bva-time'), { type:'bar', data:{ labels:cats, datasets:[{ label:'Before (menit)', data:[75,25,37.5], backgroundColor:'rgba(248,81,73,.7)', borderColor:'#f85149', borderWidth:1, borderRadius:4 },{ label:'After (menit)', data:[1,5,5], backgroundColor:'rgba(63,185,80,.7)', borderColor:'#3fb950', borderWidth:1, borderRadius:4 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:'#e6edf3', font:{ size:12 } } }, tooltip:{ mode:'index' } }, scales:{ x:{ ticks:{color:'#7d8590',font:{size:11}}, grid:{display:false}, border:{color:'var(--border)'} }, y:{ ticks:{color:'#7d8590',font:{size:11}}, grid:{color:'rgba(48,54,61,.5)'}, border:{color:'var(--border)'}, title:{display:true,text:'Menit/Hari',color:'#7d8590',font:{size:11}} } } } });
   destroyChart('chart-bva-cost');
-  charts['chart-bva-cost'] = new Chart(document.getElementById('chart-bva-cost'), {
-    type: 'bar',
-    data: {
-      labels: ['Before', 'After', 'Penghematan'],
-      datasets: [{
-        label: 'Biaya Waktu (Rp)',
-        data: [3575000, 237500, 3337500],
-        backgroundColor: ['rgba(248,81,73,.7)', 'rgba(63,185,80,.7)', 'rgba(121,192,255,.7)'],
-        borderColor: ['#f85149', '#3fb950', '#79c0ff'],
-        borderWidth: 1, borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return 'Rp ' + c.raw.toLocaleString('id-ID'); } } } },
-      scales: {
-        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
-        y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Rp/Bulan', color: '#7d8590', font: { size: 11 } } }
-      }
-    }
-  });
+  charts['chart-bva-cost'] = new Chart(document.getElementById('chart-bva-cost'), { type:'bar', data:{ labels:['Before','After','Penghematan'], datasets:[{ label:'Biaya Waktu (Rp)', data:[3575000,237500,3337500], backgroundColor:['rgba(248,81,73,.7)','rgba(63,185,80,.7)','rgba(121,192,255,.7)'], borderColor:['#f85149','#3fb950','#79c0ff'], borderWidth:1, borderRadius:4 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>'Rp '+c.raw.toLocaleString('id-ID')}} }, scales:{ x:{ ticks:{color:'#7d8590',font:{size:11}}, grid:{display:false}, border:{color:'var(--border)'} }, y:{ ticks:{color:'#7d8590',font:{size:11}}, grid:{color:'rgba(48,54,61,.5)'}, border:{color:'var(--border)'}, title:{display:true,text:'Rp/Bulan',color:'#7d8590',font:{size:11}} } } } });
 }
 
 // ════════════════════════════════════════
@@ -1157,75 +979,37 @@ function renderBvaCharts() {
 // ════════════════════════════════════════
 function renderDnHandler() {
   var parts = getParts();
-  var negParts = parts.filter(function(p) { return getStatus(p) === 'neg' || p.ln < 0 || p.portal < 0; });
+  var negParts = parts.filter(p => getStatus(p) === 'neg' || p.ln < 0 || p.portal < 0);
   document.getElementById('dn-count-badge').textContent = negParts.length + ' item perlu penanganan';
   var container = document.getElementById('dn-items-list');
-  if (!negParts.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div>';
-    return;
-  }
-  container.innerHTML = negParts.map(function(p) {
-    var diff = p.ln - p.portal;
-    var resolved = p.resolvedDn;
-    return '<div class="dn-item ' + (resolved ? 'dn-resolved' : '') + '" id="dn-item-' + p.id + '">' +
-      '<div class="dn-item-info">' +
-        '<div class="dn-item-part">' + p.part + '</div>' +
-        '<div class="dn-item-desc">Infor LN: ' + p.ln + ' · Portal E-WH: ' + p.portal + ' · Aging: ' + p.aging + ' hari</div>' +
-      '</div>' +
-      '<div><div class="dn-item-val">' + diff + '</div><div class="dn-item-val-label">Outstanding DN</div></div>' +
-      '<div class="dn-item-actions">' +
-        (resolved
-          ? '<span class="resolved-badge">✓ Resolved</span>'
-          : '<button class="btn-sm btn-danger" onclick="escalateDn(' + p.id + ')">⚡ Eskalasi</button>' +
-            '<button class="btn-sm btn-success" onclick="resolveDn(' + p.id + ')">✓ Resolve</button>') +
-      '</div>' +
-    '</div>';
+  if (!negParts.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div>'; return; }
+  container.innerHTML = negParts.map(p => {
+    var diff = p.ln - p.portal; var resolved = p.resolvedDn;
+    return `<div class="dn-item ${resolved?'dn-resolved':''}" id="dn-item-${p.id}"><div class="dn-item-info"><div class="dn-item-part">${p.part}</div><div class="dn-item-desc">Infor LN: ${p.ln} · Portal E-WH: ${p.portal} · Aging: ${p.aging} hari</div></div><div><div class="dn-item-val">${diff}</div><div class="dn-item-val-label">Outstanding DN</div></div><div class="dn-item-actions">${resolved?'<span class="resolved-badge">✓ Resolved</span>':`<button class="btn-sm btn-danger" onclick="escalateDn(${p.id})">⚡ Eskalasi</button><button class="btn-sm btn-success" onclick="resolveDn(${p.id})">✓ Resolve</button>`}</div></div>`;
   }).join('');
   renderDnLog();
 }
-
 function escalateDn(id) {
-  var parts = getParts();
-  var p = null;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
+  var p = getParts().find(x => x.id === id);
   if (!p) return;
-  addDnLog('[ESKALASI] Part ' + p.part + ': Outstanding DN=' + (p.ln - p.portal) + ' — Diteruskan ke Supervisor IC/PPIC untuk persetujuan auto-reverse.', 'warn');
-  addLog('Eskalasi DN negatif: ' + p.part + ' (selisih ' + (p.ln - p.portal) + ')', 'warn');
-  alert('✅ Eskalasi berhasil!\n\nPart ' + p.part + ' telah diteruskan ke Supervisor IC untuk persetujuan auto-reverse DN.\n\nOutstanding DN: ' + (p.ln - p.portal) + '\n\nProses akan berlanjut setelah approval diberikan.');
+  addDnLog('[ESKALASI] Part ' + p.part + ': Outstanding DN=' + (p.ln-p.portal) + ' — Diteruskan ke Supervisor.', 'warn');
+  addLog('Eskalasi DN negatif: ' + p.part, 'warn');
+  alert('✅ Eskalasi berhasil!\n\nPart ' + p.part + ' diteruskan ke Supervisor IC.\nOutstanding DN: ' + (p.ln-p.portal));
 }
-
 function resolveDn(id) {
-  var parts = getParts();
-  var idx = -1;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { idx = i; break; } }
-  if (idx < 0) return;
+  var parts = getParts(); var idx = parts.findIndex(x => x.id === id); if (idx < 0) return;
   var p = parts[idx];
-  if (!confirm('Resolve DN negatif untuk part ' + p.part + '?\nOutstanding DN akan di-set ke 0 (auto-reverse).\n\nPastikan PO terkait telah dikonfirmasi dibatalkan.')) return;
-  var oldLn = p.ln;
-  parts[idx].ln = parts[idx].portal;
-  parts[idx].resolvedDn = true;
+  if (!confirm('Resolve DN negatif untuk part ' + p.part + '?')) return;
+  var oldLn = p.ln; parts[idx].ln = parts[idx].portal; parts[idx].resolvedDn = true;
   saveParts(parts);
-  addDnLog('[RESOLVED] Auto-Reverse DN: Part ' + p.part + ' — Qty Infor LN disesuaikan ' + oldLn + ' → ' + p.portal + '. Outstanding DN = 0.', 'ok');
-  addLog('DN Negatif diselesaikan: ' + p.part + ' — auto-reverse sukses', 'ok');
-  renderDnHandler();
-  refreshAll();
+  addDnLog('[RESOLVED] Auto-Reverse DN: Part ' + p.part + ' — Qty Infor LN ' + oldLn + ' → ' + p.portal + '. Outstanding DN = 0.', 'ok');
+  addLog('DN Negatif diselesaikan: ' + p.part, 'ok');
+  renderDnHandler(); refreshAll();
 }
-
 function renderDnLog() {
+  var el = document.getElementById('dn-log'); if (!el) return;
   var logs = getDnLogs();
-  var el = document.getElementById('dn-log');
-  if (!el) return;
-  if (!logs.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada log penanganan DN</div></div>';
-    return;
-  }
-  el.innerHTML = logs.map(function(l) {
-    return '<div class="log-item">' +
-      '<span class="log-time">' + l.time + '</span>' +
-      '<span class="log-msg">' + l.msg + '</span>' +
-      '<span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span>' +
-    '</div>';
-  }).join('');
+  el.innerHTML = !logs.length ? '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada log penanganan DN</div></div>' : logs.map(l=>`<div class="log-item"><span class="log-time">${l.time}</span><span class="log-msg">${l.msg}</span><span class="log-type ${l.type}">${l.type.toUpperCase()}</span></div>`).join('');
 }
 
 // ════════════════════════════════════════
@@ -1233,121 +1017,72 @@ function renderDnLog() {
 // ════════════════════════════════════════
 function addPart() {
   var part = document.getElementById('inp-part').value.trim();
-  var ln = parseInt(document.getElementById('inp-ln').value) || 0;
+  var ln   = parseInt(document.getElementById('inp-ln').value) || 0;
   var portal = parseInt(document.getElementById('inp-portal').value) || 0;
   var aging = parseInt(document.getElementById('inp-aging').value) || 0;
   if (!part) { alert('Part number wajib diisi!'); return; }
   var parts = getParts();
-  for (var i = 0; i < parts.length; i++) {
-    if (parts[i].part === part) { alert('Part sudah ada!'); return; }
-  }
-  var id = Date.now();
-  parts.push({ id: id, part: part, ln: ln, portal: portal, aging: aging, resolvedDn: false });
+  if (parts.find(p => p.part === part)) { alert('Part sudah ada!'); return; }
+  parts.push({ id:Date.now(), part, ln, portal, aging, resolvedDn:false });
   saveParts(parts);
-  addLog('Part baru ditambahkan: ' + part + ' (LN:' + ln + ', Portal:' + portal + ')', 'ok');
-  document.getElementById('inp-part').value = '';
-  document.getElementById('inp-ln').value = '';
-  document.getElementById('inp-portal').value = '';
-  document.getElementById('inp-aging').value = '';
-  renderTable();
-  refreshKPI();
+  addLog('Part baru ditambahkan: ' + part, 'ok');
+  ['inp-part','inp-ln','inp-portal','inp-aging'].forEach(id => document.getElementById(id).value = '');
+  renderTable(); refreshKPI();
 }
-
 function renderTable() {
   var parts = getParts();
   var fStatus = document.getElementById('filter-status').value;
   var fSearch = document.getElementById('filter-search').value.toLowerCase();
-  var filtered = parts.filter(function(p) {
+  var filtered = parts.filter(p => {
     var s = getStatus(p);
-    var matchStatus = fStatus === 'all' ||
-      (fStatus === 'mismatch' && s === 'mismatch') ||
-      (fStatus === 'match' && s === 'match') ||
-      (fStatus === 'neg' && s === 'neg') ||
-      (fStatus === 'aging' && p.aging > 3);
-    var matchSearch = !fSearch || p.part.toLowerCase().indexOf(fSearch) !== -1;
+    var matchStatus = fStatus==='all'||(fStatus==='mismatch'&&s==='mismatch')||(fStatus==='match'&&s==='match')||(fStatus==='neg'&&s==='neg')||(fStatus==='aging'&&p.aging>3);
+    var matchSearch = !fSearch || p.part.toLowerCase().includes(fSearch);
     return matchStatus && matchSearch;
   });
   var canEdit = currentUser && (currentUser.role === 'Supervisor IC' || currentUser.role === 'Staff IC');
   var canDelete = currentUser && currentUser.role === 'Supervisor IC';
   var tbody = document.getElementById('tbl-main');
-  if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Tidak ada data ditemukan</td></tr>';
-    return;
-  }
-  tbody.innerHTML = filtered.map(function(p) {
-    var s = getStatus(p);
-    var diff = p.ln - p.portal;
-    return '<tr>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;font-size:12px">' + p.part + '</td>' +
-      '<td>' + p.ln.toLocaleString() + '</td>' +
-      '<td>' + p.portal.toLocaleString() + '</td>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace;color:' + (diff < 0 ? 'var(--red)' : diff > 0 ? 'var(--orange)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td>' +
-      '<td><span style="color:' + (p.aging > 7 ? 'var(--red)' : p.aging > 3 ? 'var(--orange)' : 'var(--text-muted)') + '">' + p.aging + '</span></td>' +
-      '<td>' + statusLabel(s) + '</td>' +
-      '<td style="display:flex;gap:6px">' +
-        (canEdit ? '<button class="btn-sm btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openEdit(' + p.id + ')">Edit</button>' : '') +
-        (canDelete ? '<button class="btn-sm btn-danger" style="padding:4px 10px;font-size:11px" onclick="deletePart(' + p.id + ')">Del</button>' : '') +
-      '</td>' +
-    '</tr>';
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Tidak ada data ditemukan</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(p => {
+    var s = getStatus(p); var diff = p.ln - p.portal;
+    return `<tr><td style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px">${p.part}</td><td>${p.ln.toLocaleString()}</td><td>${p.portal.toLocaleString()}</td><td style="font-family:'IBM Plex Mono',monospace;color:${diff<0?'var(--red)':diff>0?'var(--orange)':'var(--green)'}">${diff>0?'+':''}${diff.toLocaleString()}</td><td><span style="color:${p.aging>7?'var(--red)':p.aging>3?'var(--orange)':'var(--text-muted)'}">${p.aging}</span></td><td>${statusLabel(s)}</td><td style="display:flex;gap:6px">${canEdit?`<button class="btn-sm btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openEdit(${p.id})">Edit</button>`:''}${canDelete?`<button class="btn-sm btn-danger" style="padding:4px 10px;font-size:11px" onclick="deletePart(${p.id})">Del</button>`:''}</td></tr>`;
   }).join('');
 }
-
 function openEdit(id) {
-  var parts = getParts();
-  var p = null;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
-  if (!p) return;
+  var p = getParts().find(x => x.id === id); if (!p) return;
   editTarget = id;
-  document.getElementById('edit-part').value = p.part;
-  document.getElementById('edit-ln').value = p.ln;
+  document.getElementById('edit-part').value   = p.part;
+  document.getElementById('edit-ln').value     = p.ln;
   document.getElementById('edit-portal').value = p.portal;
-  document.getElementById('edit-aging').value = p.aging;
+  document.getElementById('edit-aging').value  = p.aging;
   document.getElementById('edit-modal').classList.add('open');
 }
-
-function closeModal() {
-  document.getElementById('edit-modal').classList.remove('open');
-  editTarget = null;
-}
-
+function closeModal() { document.getElementById('edit-modal').classList.remove('open'); editTarget = null; }
 function saveEdit() {
   if (!editTarget) return;
-  var parts = getParts();
-  var idx = -1;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === editTarget) { idx = i; break; } }
-  if (idx < 0) return;
-  var old = { ln: parts[idx].ln, portal: parts[idx].portal };
-  parts[idx].ln = parseInt(document.getElementById('edit-ln').value) || 0;
+  var parts = getParts(); var idx = parts.findIndex(x => x.id === editTarget); if (idx < 0) return;
+  var old = { ln:parts[idx].ln, portal:parts[idx].portal };
+  parts[idx].ln     = parseInt(document.getElementById('edit-ln').value) || 0;
   parts[idx].portal = parseInt(document.getElementById('edit-portal').value) || 0;
-  parts[idx].aging = parseInt(document.getElementById('edit-aging').value) || 0;
+  parts[idx].aging  = parseInt(document.getElementById('edit-aging').value) || 0;
   saveParts(parts);
   addLog('Edit part ' + parts[idx].part + ': LN ' + old.ln + '→' + parts[idx].ln + ', Portal ' + old.portal + '→' + parts[idx].portal, 'info');
-  closeModal();
-  renderTable();
-  refreshKPI();
+  closeModal(); renderTable(); refreshKPI();
 }
-
 function deletePart(id) {
-  var parts = getParts();
-  var p = null;
-  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
-  if (!confirm('Hapus part ' + (p ? p.part : '') + '?')) return;
-  saveParts(getParts().filter(function(x) { return x.id !== id; }));
-  addLog('Part dihapus: ' + (p ? p.part : id), 'warn');
-  renderTable();
-  refreshKPI();
+  var p = getParts().find(x => x.id === id);
+  if (!confirm('Hapus part ' + (p?p.part:'') + '?')) return;
+  saveParts(getParts().filter(x => x.id !== id));
+  addLog('Part dihapus: ' + (p?p.part:id), 'warn');
+  renderTable(); refreshKPI();
 }
-
 function exportCSV() {
   var parts = getParts();
-  var rows = [['Part Number', 'Qty Infor LN', 'Qty Portal E-WH', 'Selisih', 'Aging (Hari)', 'Status']];
-  parts.forEach(function(p) {
-    rows.push([p.part, p.ln, p.portal, p.ln - p.portal, p.aging, getStatus(p)]);
-  });
-  var csv = rows.map(function(r) { return r.join(','); }).join('\n');
-  var blob = new Blob([csv], { type: 'text/csv' });
+  var rows = [['Part Number','Qty Infor LN','Qty Portal E-WH','Selisih','Aging (Hari)','Status']];
+  parts.forEach(p => rows.push([p.part,p.ln,p.portal,p.ln-p.portal,p.aging,getStatus(p)]));
+  var csv = rows.map(r=>r.join(',')).join('\n');
   var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download = 'ic_data_' + Date.now() + '.csv';
   a.click();
   addLog('Export CSV berhasil', 'ok');
@@ -1357,94 +1092,81 @@ function exportCSV() {
 //  LOG
 // ════════════════════════════════════════
 function renderLog() {
+  var el = document.getElementById('main-log'); if (!el) return;
   var logs = getLogs();
-  var el = document.getElementById('main-log');
-  if (!el) return;
-  if (!logs.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div>';
-    return;
-  }
-  el.innerHTML = logs.map(function(l) {
-    return '<div class="log-item">' +
-      '<span class="log-time">' + l.time + '</span>' +
-      '<span class="log-msg">[' + (l.user || 'system') + '] ' + l.msg + '</span>' +
-      '<span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span>' +
-    '</div>';
-  }).join('');
+  el.innerHTML = !logs.length ? '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div>' : logs.map(l=>`<div class="log-item"><span class="log-time">${l.time}</span><span class="log-msg">[${l.user||'system'}] ${l.msg}</span><span class="log-type ${l.type}">${l.type.toUpperCase()}</span></div>`).join('');
 }
-
 function clearLog() {
   if (!confirm('Hapus semua log?')) return;
-  saveLogs([]);
-  renderLog();
+  saveLogs([]); renderLog();
 }
 
 // ════════════════════════════════════════
-//  ADMIN
+//  ADMIN — Mengambil data dari Supabase
 // ════════════════════════════════════════
-function renderAdminTable() {
-  var users = getUsers();
+async function renderAdminTable() {
   var tbody = document.getElementById('tbl-admin');
-  tbody.innerHTML = users.map(function(u) {
-    var roleClass = u.role === 'Supervisor IC' ? 'supervisor' : 'staff';
-    return '<tr>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace">' + u.username + '</td>' +
-      '<td><span class="role-badge ' + roleClass + '">' + u.role + '</span></td>' +
-      '<td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(\'' + u.username + '\')">Hapus</button></td>' +
-    '</tr>';
-  }).join('');
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px"><span class="spinner" style="border-top-color:var(--cyan)"></span> Mengambil data dari Supabase…</td></tr>';
+
+  try {
+    var users = await sbGetUsers();
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">Belum ada pengguna terdaftar</td></tr>';
+      return;
+    }
+    tbody.innerHTML = users.map((u, i) => {
+      var roleClass = u.role === 'Supervisor IC' ? 'supervisor' : 'staff';
+      var createdAt = u.created_at ? new Date(u.created_at).toLocaleString('id-ID') : '—';
+      return `<tr>
+        <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace">${i+1}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-weight:600">${u.username}</td>
+        <td><span class="role-badge ${roleClass}">${u.role}</span></td>
+        <td style="color:var(--text-muted);font-size:12px">${createdAt}</td>
+        <td>
+          ${currentUser && u.username !== currentUser.username
+            ? `<button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(${u.id}, '${u.username}')">Hapus</button>`
+            : '<span style="font-size:11px;color:var(--text-muted)">(Anda)</span>'}
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--red);padding:24px">Error: ${err.message}</td></tr>`;
+  }
 }
 
-function deleteUser(username) {
-  if (currentUser && username === currentUser.username) {
-    alert('Tidak dapat menghapus akun sendiri.');
-    return;
+async function deleteUser(id, username) {
+  if (!confirm('Hapus pengguna "' + username + '" dari Supabase?')) return;
+  try {
+    await sbDeleteUser(id);
+    addLog('Akun dihapus dari Supabase: ' + username, 'warn');
+    renderAdminTable();
+  } catch(err) {
+    alert('Gagal menghapus: ' + err.message);
   }
-  if (!confirm('Hapus pengguna "' + username + '"?')) return;
-  saveUsers(getUsers().filter(function(u) { return u.username !== username; }));
-  addLog('Akun dihapus: ' + username, 'warn');
-  renderAdminTable();
 }
 
 // ════════════════════════════════════════
 //  CHART HELPERS
 // ════════════════════════════════════════
-function destroyChart(id) {
-  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
-}
-
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 function defaultLineOpts(yLabel) {
-  return {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-    scales: {
-      x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' } },
-      y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } }
-    }
-  };
+  return { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{mode:'index',intersect:false} }, scales:{ x:{ ticks:{color:'#7d8590',font:{size:11}}, grid:{color:'rgba(48,54,61,.5)'}, border:{color:'var(--border)'} }, y:{ ticks:{color:'#7d8590',font:{size:11}}, grid:{color:'rgba(48,54,61,.5)'}, border:{color:'var(--border)'}, title:{display:true,text:yLabel,color:'#7d8590',font:{size:11}} } } };
 }
-
 function defaultBarOpts(yLabel) {
-  return {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: {} },
-    scales: {
-      x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
-      y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: yLabel, color: '#7d8590', font: { size: 11 } } }
-    }
-  };
+  return { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{} }, scales:{ x:{ ticks:{color:'#7d8590',font:{size:11}}, grid:{display:false}, border:{color:'var(--border)'} }, y:{ ticks:{color:'#7d8590',font:{size:11}}, grid:{color:'rgba(48,54,61,.5)'}, border:{color:'var(--border)'}, title:{display:true,text:yLabel,color:'#7d8590',font:{size:11}} } } };
 }
 
 // ════════════════════════════════════════
 //  REFRESH
 // ════════════════════════════════════════
 function refreshKPI() { renderKPI(); renderOverviewCharts(); }
-function refreshAll() { renderKPI(); renderOverviewCharts(); }
+function refreshAll()  { renderKPI(); renderOverviewCharts(); }
 
 // ════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════
-seedData();
+seedParts();
+checkSupabaseConnection(); // Cek koneksi saat halaman dimuat
 </script>
 </body>
 </html>
