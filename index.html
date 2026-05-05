@@ -6,8 +6,6 @@
 <title>IC Monitoring Dashboard — PT Inkoasku</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
 <style>
 :root {
   --bg: #0d1117;
@@ -684,13 +682,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
 <script>
 // ════════════════════════════════════════
-//  SUPABASE CONFIG — Ganti dengan kredensial Anda!
-// ════════════════════════════════════════
-const SUPABASE_URL = 'https://XXXXXXXXXXXXXXXX.supabase.co'; // ← ganti
-const SUPABASE_ANON_KEY = 'eyXXXXXXXXXXXXXXXXXXXXXXXXXXX';  // ← ganti
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════
 var currentUser = null;
@@ -698,8 +689,12 @@ var editTarget = null;
 var charts = {};
 
 // ════════════════════════════════════════
-//  STORAGE HELPERS (Parts & Logs tetap localStorage)
+//  STORAGE HELPERS
 // ════════════════════════════════════════
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('ic_users') || '[]'); } catch(e) { return []; }
+}
+function saveUsers(u) { localStorage.setItem('ic_users', JSON.stringify(u)); }
 function getParts() {
   try { return JSON.parse(localStorage.getItem('ic_parts') || '[]'); } catch(e) { return []; }
 }
@@ -734,194 +729,6 @@ function addDnLog(msg, type) {
   renderDnLog();
 }
 
-// ════════════════════════════════════════
-//  SEED DATA (Parts saja, Users sudah di Supabase)
-// ════════════════════════════════════════
-function seedData() {
-  if (!getParts().length) {
-    saveParts([
-      { id: 1, part: 'CDICAT00-000-0001', ln: 300, portal: 350, aging: 5, resolvedDn: false },
-      { id: 2, part: 'CDICAT00-000-0002', ln: 1200, portal: 200, aging: 8, resolvedDn: false },
-      { id: 3, part: 'CDIBOX00-000-0021', ln: 14, portal: 14, aging: 0, resolvedDn: false },
-      { id: 4, part: 'CINCAR00-000-0012', ln: 100, portal: 120, aging: 3, resolvedDn: false },
-      { id: 5, part: 'CDICAR00-000-0001', ln: 650, portal: 650, aging: 0, resolvedDn: false },
-      { id: 6, part: 'STL000190-CONS', ln: 460, portal: 340, aging: 6, resolvedDn: false },
-      { id: 7, part: 'STL000142-CED', ln: 0, portal: 50, aging: 2, resolvedDn: false },
-      { id: 8, part: 'STL000331-BND', ln: 500, portal: 500, aging: 0, resolvedDn: false },
-    ]);
-  }
-}
-
-// ════════════════════════════════════════
-//  AUTH — SUPABASE
-// ════════════════════════════════════════
-function switchAuthTab(tab) {
-  var isLogin = tab === 'login';
-  document.getElementById('tab-login-btn').classList.toggle('active', isLogin);
-  document.getElementById('tab-register-btn').classList.toggle('active', !isLogin);
-  document.getElementById('login-form').style.display = isLogin ? 'block' : 'none';
-  document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
-}
-
-async function doLogin() {
-  var username = document.getElementById('login-user').value.trim();
-  var password = document.getElementById('login-pass').value;
-  var msgEl = document.getElementById('login-msg');
-  msgEl.textContent = 'Memverifikasi...';
-  msgEl.style.color = 'var(--text-muted)';
-
-  // Cari email berdasarkan username di tabel profiles
-  // Kita gunakan konvensi: email = username@inkoasku.local
-  var email = username + '@inkoasku.local';
-
-  try {
-    var { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-
-    if (error) {
-      msgEl.style.color = 'var(--red)';
-      msgEl.textContent = 'Username atau password salah.';
-      return;
-    }
-
-    // Ambil profil user (username & role)
-    var { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('username, role')
-      .eq('id', data.user.id)
-      .single();
-
-    if (profileError || !profile) {
-      msgEl.style.color = 'var(--red)';
-      msgEl.textContent = 'Profil user tidak ditemukan.';
-      return;
-    }
-
-    currentUser = { username: profile.username, role: profile.role, id: data.user.id };
-    msgEl.textContent = '';
-    launchApp();
-
-  } catch(e) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'Terjadi kesalahan. Coba lagi.';
-  }
-}
-
-async function doRegister() {
-  var username = document.getElementById('reg-user').value.trim();
-  var password = document.getElementById('reg-pass').value;
-  var role = document.getElementById('reg-role').value;
-  var msgEl = document.getElementById('reg-msg');
-
-  if (!username || password.length < 6) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
-    return;
-  }
-
-  msgEl.style.color = 'var(--text-muted)';
-  msgEl.textContent = 'Mendaftarkan akun...';
-
-  // Cek apakah username sudah dipakai
-  var { data: existing } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('username', username)
-    .maybeSingle();
-
-  if (existing) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'Username sudah terdaftar.';
-    return;
-  }
-
-  // Email internal: username@inkoasku.local
-  var email = username + '@inkoasku.local';
-
-  try {
-    var { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        data: { username: username, role: role }
-      }
-    });
-
-    if (error) {
-      msgEl.style.color = 'var(--red)';
-      msgEl.textContent = 'Gagal mendaftar: ' + error.message;
-      return;
-    }
-
-    msgEl.style.color = 'var(--green)';
-    msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
-    setTimeout(function() { switchAuthTab('login'); }, 1500);
-
-  } catch(e) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'Terjadi kesalahan. Coba lagi.';
-  }
-}
-
-async function logout() {
-  addLog('Logout: ' + currentUser.username, 'info');
-  await supabase.auth.signOut();
-  currentUser = null;
-  document.getElementById('auth-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('admin-tab').style.display = 'none';
-}
-
-// ════════════════════════════════════════
-//  ADMIN — Gunakan Supabase untuk list user
-// ════════════════════════════════════════
-async function renderAdminTable() {
-  // Hanya Supervisor yang bisa akses
-  if (!currentUser || currentUser.role !== 'Supervisor IC') return;
-
-  var { data: users, error } = await supabase
-    .from('profiles')
-    .select('id, username, role')
-    .order('created_at');
-
-  var tbody = document.getElementById('tbl-admin');
-  if (error || !users) {
-    tbody.innerHTML = '<tr><td colspan="3" style="color:var(--red);text-align:center;padding:24px">Gagal memuat data user</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = users.map(function(u) {
-    var roleClass = u.role === 'Supervisor IC' ? 'supervisor' : 'staff';
-    return '<tr>' +
-      '<td style="font-family:\'IBM Plex Mono\',monospace">' + u.username + '</td>' +
-      '<td><span class="role-badge ' + roleClass + '">' + u.role + '</span></td>' +
-      '<td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(\'' + u.id + '\',\'' + u.username + '\')">Hapus</button></td>' +
-    '</tr>';
-  }).join('');
-}
-
-async function deleteUser(userId, username) {
-  if (currentUser && userId === currentUser.id) {
-    alert('Tidak dapat menghapus akun sendiri.');
-    return;
-  }
-  if (!confirm('Hapus pengguna "' + username + '"?')) return;
-
-  // Hapus profil (auth user dihapus via cascade atau Supabase Admin API)
-  var { error } = await supabase
-    .from('profiles')
-    .delete()
-    .eq('id', userId);
-
-  if (error) {
-    alert('Gagal menghapus: ' + error.message);
-    return;
-  }
-  addLog('Akun dihapus: ' + username, 'warn');
-  renderAdminTable();
-}
 // ════════════════════════════════════════
 //  SEED DATA
 // ════════════════════════════════════════
@@ -1638,23 +1445,6 @@ function refreshAll() { renderKPI(); renderOverviewCharts(); }
 //  INIT
 // ════════════════════════════════════════
 seedData();
-
-// Cek apakah user sudah login sebelumnya (session aktif)
-(async function checkSession() {
-  var { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    var { data: profile } = await supabase
-      .from('profiles')
-      .select('username, role')
-      .eq('id', session.user.id)
-      .single();
-
-    if (profile) {
-      currentUser = { username: profile.username, role: profile.role, id: session.user.id };
-      launchApp();
-    }
-  }
-})();
 </script>
 </body>
 </html>
