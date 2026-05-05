@@ -24,57 +24,100 @@
   --cyan: #79c0ff;
   --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-/* AUTH */
-#auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,#0d1117 0%,#161b22 50%,#0d1117 100%); }
-.auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px; width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,.6); }
-.auth-logo { text-align: center; margin-bottom: 28px; }
-.auth-logo .brand { font-size: 22px; font-weight: 700; color: var(--cyan); letter-spacing: -.5px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── AUTH SCREEN ── */
+#auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+}
+.auth-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px;
+  width: 360px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+.auth-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.auth-logo .brand { font-size: 22px; font-weight: 700; color: var(--cyan); letter-spacing: -0.5px; }
 .auth-logo .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
 .tab-btns { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg); border-radius: 8px; padding: 4px; }
 .tab-btn { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all .2s; }
 .tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: .5px; }
-.form-group input, .form-group select { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s; }
+.form-group input, .form-group select {
+  width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s;
+}
 .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
 .btn-primary { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: background .2s; }
 .btn-primary:hover { background: var(--accent-hover); }
 .auth-msg { margin-top: 12px; font-size: 13px; text-align: center; min-height: 20px; }
 
-/* APP */
+/* ── APP ── */
 #app { display: none; }
 
-/* HEADER */
-.header { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; height: 56px; gap: 16px; }
+/* ── HEADER ── */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,17,23,.95); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; align-items: center; height: 56px; gap: 16px;
+}
 .header-brand { font-weight: 700; font-size: 15px; color: var(--cyan); white-space: nowrap; }
 .header-sub { font-size: 12px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
 .header-sep { flex: 1; }
-.live-pill { display: flex; align-items: center; gap: 6px; background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--green); }
+.live-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
+  border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--green);
+}
 .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-.user-chip { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 12px; font-size: 13px;
+}
 .avatar { width: 24px; height: 24px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
 .btn-logout { padding: 6px 14px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 12px; font-family: inherit; transition: all .2s; }
 .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
-/* NAV */
+/* ── NAV TABS ── */
 .nav-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 24px; overflow-x: auto; }
-.nav-tab { padding: 12px 18px; font-size: 13px; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; font-weight: 500; }
+.nav-tab { padding: 12px 18px; font-size: 13px; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; font-weight: 500; user-select: none; }
 .nav-tab.active { color: var(--text); border-bottom-color: var(--accent); }
 .nav-tab:hover:not(.active) { color: var(--text); }
 
-/* MAIN */
+/* ── MAIN CONTENT ── */
 .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
 .page { display: none; }
 .page.active { display: block; }
 
-/* KPI */
+/* ── KPI CARDS ── */
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
 @media(max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} }
-.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; overflow: hidden; transition: border-color .2s; }
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 20px; position: relative; overflow: hidden; transition: border-color .2s;
+}
 .kpi-card:hover { border-color: #444; }
 .kpi-card.danger { border-left: 3px solid var(--red); }
 .kpi-card.warning { border-left: 3px solid var(--orange); }
@@ -91,7 +134,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .kpi-trend.up { color: var(--red); }
 .kpi-trend.down { color: var(--green); }
 
-/* SECTION */
+/* ── SECTION TITLES ── */
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .section-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .section-title::before { content: ''; display: inline-block; width: 3px; height: 16px; background: var(--accent); border-radius: 2px; }
@@ -101,17 +144,19 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .badge.yellow { background: rgba(227,179,65,.15); color: var(--yellow); }
 .badge.blue { background: rgba(31,111,235,.15); color: var(--cyan); }
 
-/* CHARTS */
+/* ── CHART CARDS ── */
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
 .chart-grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
 @media(max-width:900px){ .chart-grid,.chart-grid-3{grid-template-columns:1fr} }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+}
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .card-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; }
 .chart-wrap { position: relative; height: 220px; }
 .chart-wrap-tall { position: relative; height: 280px; }
 
-/* TABLE */
+/* ── TABLE ── */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th { background: var(--surface2); padding: 10px 14px; text-align: left; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; border-bottom: 1px solid var(--border); }
@@ -123,7 +168,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .status-pill.neg { background: rgba(210,153,34,.12); color: var(--orange); }
 .status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-/* FILTER */
+/* ── FILTER BAR ── */
 .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
 .filter-bar select, .filter-bar input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 7px 12px; font-size: 13px; font-family: inherit; outline: none; }
 .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
@@ -138,7 +183,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .btn-success:hover { background: rgba(63,185,80,.1); }
 .flex-sep { flex: 1; }
 
-/* BEFORE VS AFTER */
+/* ── BEFORE VS AFTER ── */
 .bva-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch; margin-bottom: 24px; }
 .bva-col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
 .bva-col.before { border-left: 3px solid var(--red); border-radius: 10px 0 0 10px; }
@@ -157,14 +202,17 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .bva-metric-val.bad { color: var(--red); }
 .bva-metric-val.good { color: var(--green); }
 
-/* DN HANDLER */
+/* ── DN NEGATIVE HANDLER ── */
 .dn-handler { background: rgba(210,153,34,.06); border: 1px solid rgba(210,153,34,.25); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
 .dn-handler-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .dn-handler-icon { font-size: 20px; }
 .dn-handler-title { font-size: 14px; font-weight: 600; color: var(--yellow); }
 .dn-handler-sub { font-size: 12px; color: var(--text-muted); }
 .dn-items { display: flex; flex-direction: column; gap: 10px; }
-.dn-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dn-item {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
 .dn-item-info { flex: 1; min-width: 180px; }
 .dn-item-part { font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
 .dn-item-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
@@ -174,7 +222,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .dn-resolved { text-decoration: line-through; opacity: .5; }
 .resolved-badge { background: rgba(63,185,80,.15); color: var(--green); border: 1px solid rgba(63,185,80,.3); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
 
-/* LOG */
+/* ── LOG ── */
 .log-container { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
 .log-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; background: var(--bg); border-radius: 6px; font-size: 12px; }
 .log-time { color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
@@ -185,26 +233,26 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .log-type.error { background: rgba(248,81,73,.15); color: var(--red); }
 .log-type.ok { background: rgba(63,185,80,.15); color: var(--green); }
 
-/* INPUT */
+/* ── INPUT SECTION ── */
 .input-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 20px; }
 @media(max-width:900px){ .input-grid{grid-template-columns:1fr 1fr} }
 .input-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: .5px; }
 .input-group input { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; outline: none; transition: border-color .2s; }
 .input-group input:focus { border-color: var(--accent); }
 
-/* MODAL */
+/* ── MODAL ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; display: none; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
 .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; max-width: 480px; width: 90%; }
 .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
-/* SCROLLBAR */
+/* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* ADMIN */
+/* ── ADMIN ── */
 .user-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .user-table th { background: var(--surface2); padding: 10px 14px; text-align: left; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; font-family: 'IBM Plex Mono', monospace; border-bottom: 1px solid var(--border); }
 .user-table td { padding: 10px 14px; border-bottom: 1px solid rgba(48,54,61,.4); }
@@ -212,23 +260,14 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .role-badge.supervisor { background: rgba(163,113,247,.15); color: var(--purple); }
 .role-badge.staff { background: rgba(121,192,255,.15); color: var(--cyan); }
 
-/* EMPTY */
+/* ── EMPTY STATE ── */
 .empty { text-align: center; padding: 48px 24px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; }
 .empty-text { font-size: 14px; }
 
-/* SOP STEPS */
-.sop-step { display: flex; align-items: flex-start; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
-.sop-step:last-child { border-bottom: none; }
-.sop-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
-.sop-step-title { font-size: 13px; font-weight: 600; }
-.sop-step-desc { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-
-/* IMPROVEMENT CALLOUT */
-.improvement-banner { background: linear-gradient(135deg, rgba(63,185,80,.1), rgba(31,111,235,.1)); border: 1px solid rgba(63,185,80,.3); border-radius: 10px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
-.improvement-banner .icon { font-size: 32px; }
-.improvement-banner h3 { font-size: 15px; font-weight: 700; color: var(--green); }
-.improvement-banner p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+/* ── PROGRESS BAR ── */
+.progress-bar { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
 </style>
 </head>
 <body>
@@ -241,20 +280,39 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       <div class="sub">IC MONITORING SYSTEM · PT INKOASKU</div>
     </div>
     <div class="tab-btns">
-      <button class="tab-btn active" onclick="switchAuthTab('login')">Masuk</button>
-      <button class="tab-btn" onclick="switchAuthTab('register')">Daftar</button>
+      <button class="tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Masuk</button>
+      <button class="tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Daftar</button>
     </div>
+    <!-- LOGIN -->
     <div id="login-form">
-      <div class="form-group"><label>Username</label><input type="text" id="login-user" placeholder="username"/></div>
-      <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••"/></div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-user" placeholder="username" autocomplete="username"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••" autocomplete="current-password"/>
+      </div>
       <button class="btn-primary" onclick="doLogin()">Masuk</button>
       <p class="auth-msg" id="login-msg" style="color:var(--red)"></p>
     </div>
+    <!-- REGISTER -->
     <div id="register-form" style="display:none">
-      <div class="form-group"><label>Username Baru</label><input type="text" id="reg-user" placeholder="username"/></div>
-      <div class="form-group"><label>Password</label><input type="password" id="reg-pass" placeholder="min. 6 karakter"/></div>
-      <div class="form-group"><label>Role</label>
-        <select id="reg-role"><option value="Staff IC">Staff IC</option><option value="Supervisor IC">Supervisor IC</option><option value="Staff PPIC">Staff PPIC</option></select>
+      <div class="form-group">
+        <label>Username Baru</label>
+        <input type="text" id="reg-user" placeholder="username" autocomplete="username"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-pass" placeholder="min. 6 karakter" autocomplete="new-password"/>
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="reg-role">
+          <option value="Staff IC">Staff IC</option>
+          <option value="Supervisor IC">Supervisor IC</option>
+          <option value="Staff PPIC">Staff PPIC</option>
+        </select>
       </div>
       <button class="btn-primary" onclick="doRegister()">Daftar Akun</button>
       <p class="auth-msg" id="reg-msg" style="color:var(--green)"></p>
@@ -264,6 +322,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
 <!-- APP -->
 <div id="app">
+  <!-- HEADER -->
   <div class="header">
     <div>
       <div class="header-brand">PAKO GROUP · IC Monitor</div>
@@ -271,25 +330,29 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
     </div>
     <div class="header-sep"></div>
     <div class="live-pill"><div class="live-dot"></div><span>LIVE</span></div>
-    <div class="user-chip"><div class="avatar" id="user-avatar">U</div><span id="user-display" style="font-size:13px"></span></div>
+    <div class="user-chip">
+      <div class="avatar" id="user-avatar">U</div>
+      <span id="user-display" style="font-size:13px"></span>
+    </div>
     <button class="btn-logout" onclick="logout()">Keluar</button>
   </div>
 
-  <div class="nav-tabs">
-    <div class="nav-tab active" onclick="showPage('overview',this)">📊 Overview</div>
-    <div class="nav-tab" onclick="showPage('trends',this)">📈 Tren & Grafik</div>
-    <div class="nav-tab" onclick="showPage('bva',this)">⚖️ Before vs After</div>
-    <div class="nav-tab" onclick="showPage('dn-handler',this)">🚨 DN Negatif</div>
-    <div class="nav-tab" onclick="showPage('data',this)">🗃️ Data Part</div>
-    <div class="nav-tab" onclick="showPage('log',this)">📋 Log Aktivitas</div>
-    <div class="nav-tab" id="admin-tab" style="display:none" onclick="showPage('admin',this)">⚙️ Admin</div>
+  <!-- NAV -->
+  <div class="nav-tabs" id="nav-tabs">
+    <div class="nav-tab active" data-page="overview" onclick="showPage('overview', this)">📊 Overview</div>
+    <div class="nav-tab" data-page="trends" onclick="showPage('trends', this)">📈 Tren &amp; Grafik</div>
+    <div class="nav-tab" data-page="bva" onclick="showPage('bva', this)">⚖️ Before vs After</div>
+    <div class="nav-tab" data-page="dn-handler" onclick="showPage('dn-handler', this)">🚨 DN Negatif</div>
+    <div class="nav-tab" data-page="data" onclick="showPage('data', this)">🗃️ Data Part</div>
+    <div class="nav-tab" data-page="log" onclick="showPage('log', this)">📋 Log Aktivitas</div>
+    <div class="nav-tab" id="admin-tab" data-page="admin" style="display:none" onclick="showPage('admin', this)">⚙️ Admin</div>
   </div>
 
   <div class="main">
 
-    <!-- OVERVIEW -->
+    <!-- ══════════════ PAGE: OVERVIEW ══════════════ -->
     <div class="page active" id="page-overview">
-      <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-grid">
         <div class="kpi-card danger">
           <div class="kpi-label">Mismatch Detected</div>
           <div class="kpi-value red" id="kpi-mismatch">—</div>
@@ -335,19 +398,28 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Part Number</th><th>Qty Infor LN</th><th>Qty Portal E-WH</th><th>Selisih</th><th>Aging (Hari)</th><th>Status</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Part Number</th>
+                <th>Qty Infor LN</th>
+                <th>Qty Portal E-WH</th>
+                <th>Selisih</th>
+                <th>Aging (Hari)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
             <tbody id="tbl-recent"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- TRENDS -->
+    <!-- ══════════════ PAGE: TRENDS ══════════════ -->
     <div class="page" id="page-trends">
       <div class="chart-grid-3">
         <div class="card">
           <div class="card-title">Tren Mismatch — 7 Hari Terakhir</div>
-          <div class="card-sub">Jumlah item mismatch per hari (historis)</div>
+          <div class="card-sub">Jumlah item mismatch per hari (simulasi data historis)</div>
           <div class="chart-wrap-tall"><canvas id="chart-trend-mismatch"></canvas></div>
         </div>
         <div class="card">
@@ -374,22 +446,16 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         <div class="card-title">Distribusi Status Part — Donut Chart</div>
         <div class="card-sub">Perbandingan proporsi status semua part terdaftar</div>
         <div style="display:flex;gap:32px;align-items:center;flex-wrap:wrap">
-          <div style="width:220px;height:220px;position:relative;flex-shrink:0"><canvas id="chart-donut"></canvas></div>
+          <div style="width:220px;height:220px;position:relative;flex-shrink:0">
+            <canvas id="chart-donut"></canvas>
+          </div>
           <div id="donut-legend" style="display:flex;flex-direction:column;gap:10px"></div>
         </div>
       </div>
     </div>
 
-    <!-- BEFORE VS AFTER -->
+    <!-- ══════════════ PAGE: BVA ══════════════ -->
     <div class="page" id="page-bva">
-      <div class="improvement-banner">
-        <div class="icon">🏆</div>
-        <div>
-          <h3>Hasil Implementasi Dashboard Monitoring IC</h3>
-          <p>Perbandingan kinerja sistem Inventory Control PT Inkoasku sebelum dan setelah implementasi Dashboard Monitoring sebagai solusi mismatch data Infor LN vs Portal E-Warehouse.</p>
-        </div>
-      </div>
-
       <div class="section-header" style="margin-bottom:20px">
         <div class="section-title">Perbandingan Kinerja: Before vs After Implementasi Dashboard</div>
       </div>
@@ -439,7 +505,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         </div>
         <div class="card">
           <div class="card-title">Penghematan Biaya Waktu (Rp/bulan)</div>
-          <div class="card-sub">Estimasi berdasarkan tarif Staf IC Rp50.000/jam</div>
+          <div class="card-sub">Estimasi berdasarkan tarif Staf PPIC Rp50.000/jam</div>
           <div class="chart-wrap"><canvas id="chart-bva-cost"></canvas></div>
         </div>
       </div>
@@ -452,7 +518,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       </div>
     </div>
 
-    <!-- DN HANDLER -->
+    <!-- ══════════════ PAGE: DN HANDLER ══════════════ -->
     <div class="page" id="page-dn-handler">
       <div class="section-header" style="margin-bottom:16px">
         <div class="section-title">Penanganan Outstanding DN Negatif</div>
@@ -463,7 +529,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         <div class="dn-handler-header">
           <div class="dn-handler-icon">⚠️</div>
           <div>
-            <div class="dn-handler-title">Mekanisme Auto-Reverse & Eskalasi DN Negatif</div>
+            <div class="dn-handler-title">Mekanisme Auto-Reverse &amp; Eskalasi DN Negatif</div>
             <div class="dn-handler-sub">Item berikut terdeteksi memiliki Outstanding DN bernilai negatif. Lakukan tindakan penanganan sesuai SOP pembatalan PO.</div>
           </div>
         </div>
@@ -474,49 +540,62 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">📋 SOP Penanganan Outstanding DN Negatif</div>
-        <div class="card-sub">Prosedur standar sesuai rancangan solusi — Approval Workflow</div>
-        <div style="margin-top:8px">
-          <div class="sop-step">
-            <div class="sop-num" style="background:var(--accent)">1</div>
-            <div><div class="sop-step-title">Identifikasi</div><div class="sop-step-desc">Sistem otomatis menandai DN dengan nilai Outstanding &lt; 0. Alert muncul di dashboard dan log aktivitas.</div></div>
+        <div class="card-sub">Prosedur standar sesuai rancangan solusi OEM — Approval Workflow</div>
+        <div style="display:flex;flex-direction:column;gap:0;margin-top:8px">
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
+            <div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">1</div>
+            <div><div style="font-size:13px;font-weight:600">Identifikasi</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Sistem otomatis menandai DN dengan nilai Outstanding &lt; 0. Alert muncul di dashboard dan log aktivitas.</div></div>
           </div>
-          <div class="sop-step">
-            <div class="sop-num" style="background:var(--orange)">2</div>
-            <div><div class="sop-step-title">Verifikasi oleh Staff IC</div><div class="sop-step-desc">Staff IC memeriksa apakah PO terkait telah di-cancel atau direvisi. Jika ya, lanjut ke langkah 3.</div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
+            <div style="width:28px;height:28px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">2</div>
+            <div><div style="font-size:13px;font-weight:600">Verifikasi oleh Staff IC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Staff IC memeriksa apakah PO terkait telah di-cancel atau direvisi. Jika ya, lanjut ke langkah 3.</div></div>
           </div>
-          <div class="sop-step">
-            <div class="sop-num" style="background:var(--yellow);color:#000">3</div>
-            <div><div class="sop-step-title">Eskalasi ke Supervisor IC / PPIC</div><div class="sop-step-desc">Klik tombol "Eskalasi" → sistem mengirim notifikasi ke Supervisor untuk persetujuan auto-reverse DN.</div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
+            <div style="width:28px;height:28px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#000">3</div>
+            <div><div style="font-size:13px;font-weight:600">Eskalasi ke Supervisor IC / PPIC</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Klik tombol "Eskalasi" → sistem mengirim notifikasi ke Supervisor untuk persetujuan auto-reverse DN.</div></div>
           </div>
-          <div class="sop-step">
-            <div class="sop-num" style="background:var(--purple)">4</div>
-            <div><div class="sop-step-title">Auto-Reverse DN (Supervisor)</div><div class="sop-step-desc">Supervisor meng-approve reverse → sistem memperbarui Outstanding DN menjadi 0 di Infor LN dan Portal E-Warehouse.</div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
+            <div style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">4</div>
+            <div><div style="font-size:13px;font-weight:600">Auto-Reverse DN (Supervisor)</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Supervisor meng-approve reverse → sistem memperbarui Outstanding DN menjadi 0 di Infor LN dan Portal E-Warehouse.</div></div>
           </div>
-          <div class="sop-step">
-            <div class="sop-num" style="background:var(--green)">5</div>
-            <div><div class="sop-step-title">Sinkronisasi & Verifikasi Akhir</div><div class="sop-step-desc">Dashboard memperbarui status part, log dicatat otomatis, dan notifikasi dikirim ke semua pihak terkait.</div></div>
+          <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0">
+            <div style="width:28px;height:28px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">5</div>
+            <div><div style="font-size:13px;font-weight:600">Sinkronisasi &amp; Verifikasi Akhir</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Dashboard memperbarui status part, log dicatat otomatis, dan notifikasi dikirim ke semua pihak terkait.</div></div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="section-header">
-          <div class="section-title">Log Penanganan DN Negatif</div>
-        </div>
+        <div class="section-header"><div class="section-title">Log Penanganan DN Negatif</div></div>
         <div class="log-container" id="dn-log"></div>
       </div>
     </div>
 
-    <!-- DATA -->
+    <!-- ══════════════ PAGE: DATA ══════════════ -->
     <div class="page" id="page-data">
       <div class="card" style="margin-bottom:20px">
         <div class="section-title" style="margin-bottom:16px">Tambah / Import Data Part</div>
         <div class="input-grid">
-          <div class="input-group"><label>Part Number</label><input type="text" id="inp-part" placeholder="STL000XXX"/></div>
-          <div class="input-group"><label>Qty Infor LN</label><input type="number" id="inp-ln" placeholder="0"/></div>
-          <div class="input-group"><label>Qty Portal E-WH</label><input type="number" id="inp-portal" placeholder="0"/></div>
-          <div class="input-group"><label>Aging (Hari)</label><input type="number" id="inp-aging" placeholder="0" min="0"/></div>
-          <div class="input-group"><label>&nbsp;</label><button class="btn-sm btn-accent" onclick="addPart()">+ Tambah</button></div>
+          <div class="input-group">
+            <label>Part Number</label>
+            <input type="text" id="inp-part" placeholder="STL000XXX"/>
+          </div>
+          <div class="input-group">
+            <label>Qty Infor LN</label>
+            <input type="number" id="inp-ln" placeholder="0"/>
+          </div>
+          <div class="input-group">
+            <label>Qty Portal E-WH</label>
+            <input type="number" id="inp-portal" placeholder="0"/>
+          </div>
+          <div class="input-group">
+            <label>Aging (Hari)</label>
+            <input type="number" id="inp-aging" placeholder="0" min="0"/>
+          </div>
+          <div class="input-group">
+            <label>&nbsp;</label>
+            <button class="btn-sm btn-accent" onclick="addPart()">+ Tambah</button>
+          </div>
         </div>
       </div>
 
@@ -535,14 +614,24 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Part Number</th><th>Qty Infor LN</th><th>Qty Portal E-WH</th><th>Selisih</th><th>Aging (Hari)</th><th>Status</th><th>Aksi</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Part Number</th>
+                <th>Qty Infor LN</th>
+                <th>Qty Portal E-WH</th>
+                <th>Selisih</th>
+                <th>Aging (Hari)</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
             <tbody id="tbl-main"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- LOG -->
+    <!-- ══════════════ PAGE: LOG ══════════════ -->
     <div class="page" id="page-log">
       <div class="card">
         <div class="section-header">
@@ -555,7 +644,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       </div>
     </div>
 
-    <!-- ADMIN -->
+    <!-- ══════════════ PAGE: ADMIN ══════════════ -->
     <div class="page" id="page-admin">
       <div class="card">
         <div class="section-header">
@@ -564,15 +653,17 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
         </div>
         <div class="table-wrap">
           <table class="user-table">
-            <thead><tr><th>Username</th><th>Role</th><th>Aksi</th></tr></thead>
+            <thead>
+              <tr><th>Username</th><th>Role</th><th>Aksi</th></tr>
+            </thead>
             <tbody id="tbl-admin"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /main -->
+</div><!-- /app -->
 
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
@@ -590,54 +681,67 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 </div>
 
 <script>
-// ============================================================
-// STATE & STORAGE
-// ============================================================
-let currentUser = null;
-let editTarget = null;
-const charts = {};
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+var currentUser = null;
+var editTarget = null;
+var charts = {};
 
-const store = {
-  getUsers: () => { try { return JSON.parse(localStorage.getItem('ic_users') || '[]'); } catch { return []; } },
-  saveUsers: u => localStorage.setItem('ic_users', JSON.stringify(u)),
-  getParts: () => { try { return JSON.parse(localStorage.getItem('ic_parts') || '[]'); } catch { return []; } },
-  saveParts: p => localStorage.setItem('ic_parts', JSON.stringify(p)),
-  getLogs: () => { try { return JSON.parse(localStorage.getItem('ic_logs') || '[]'); } catch { return []; } },
-  saveLogs: l => localStorage.setItem('ic_logs', JSON.stringify(l)),
-  getDnLogs: () => { try { return JSON.parse(localStorage.getItem('ic_dnlogs') || '[]'); } catch { return []; } },
-  saveDnLogs: l => localStorage.setItem('ic_dnlogs', JSON.stringify(l)),
-};
+// ════════════════════════════════════════
+//  STORAGE HELPERS
+// ════════════════════════════════════════
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('ic_users') || '[]'); } catch(e) { return []; }
+}
+function saveUsers(u) { localStorage.setItem('ic_users', JSON.stringify(u)); }
+function getParts() {
+  try { return JSON.parse(localStorage.getItem('ic_parts') || '[]'); } catch(e) { return []; }
+}
+function saveParts(p) { localStorage.setItem('ic_parts', JSON.stringify(p)); }
+function getLogs() {
+  try { return JSON.parse(localStorage.getItem('ic_logs') || '[]'); } catch(e) { return []; }
+}
+function saveLogs(l) { localStorage.setItem('ic_logs', JSON.stringify(l)); }
+function getDnLogs() {
+  try { return JSON.parse(localStorage.getItem('ic_dnlogs') || '[]'); } catch(e) { return []; }
+}
+function saveDnLogs(l) { localStorage.setItem('ic_dnlogs', JSON.stringify(l)); }
 
-function addLog(msg, type = 'info') {
-  const logs = store.getLogs();
-  const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  logs.unshift({ time, msg, type, user: currentUser?.username || 'system' });
+function addLog(msg, type) {
+  type = type || 'info';
+  var logs = getLogs();
+  var now = new Date();
+  var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  logs.unshift({ time: time, msg: msg, type: type, user: currentUser ? currentUser.username : 'system' });
   if (logs.length > 200) logs.splice(200);
-  store.saveLogs(logs);
+  saveLogs(logs);
   renderLog();
 }
 
-function addDnLog(msg, type = 'warn') {
-  const logs = store.getDnLogs();
-  const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  logs.unshift({ time, msg, type });
-  store.saveDnLogs(logs);
+function addDnLog(msg, type) {
+  type = type || 'warn';
+  var logs = getDnLogs();
+  var now = new Date();
+  var time = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  logs.unshift({ time: time, msg: msg, type: type });
+  saveDnLogs(logs);
   renderDnLog();
 }
 
-// ============================================================
-// SEED DATA
-// ============================================================
+// ════════════════════════════════════════
+//  SEED DATA
+// ════════════════════════════════════════
 function seedData() {
-  if (!store.getUsers().length) {
-    store.saveUsers([
+  if (!getUsers().length) {
+    saveUsers([
       { username: 'admin', password: 'admin123', role: 'Supervisor IC' },
       { username: 'ic_staff', password: 'staff123', role: 'Staff IC' },
       { username: 'ppic', password: 'ppic123', role: 'Staff PPIC' },
     ]);
   }
-  if (!store.getParts().length) {
-    store.saveParts([
+  if (!getParts().length) {
+    saveParts([
       { id: 1, part: 'CDICAT00-000-0001', ln: 300, portal: 350, aging: 5, resolvedDn: false },
       { id: 2, part: 'CDICAT00-000-0002', ln: 1200, portal: 200, aging: 8, resolvedDn: false },
       { id: 3, part: 'CDIBOX00-000-0021', ln: 14, portal: 14, aging: 0, resolvedDn: false },
@@ -650,37 +754,57 @@ function seedData() {
   }
 }
 
-// ============================================================
-// AUTH
-// ============================================================
+// ════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════
 function switchAuthTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (tab === 'login') === !i));
-  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+  var isLogin = tab === 'login';
+  document.getElementById('tab-login-btn').classList.toggle('active', isLogin);
+  document.getElementById('tab-register-btn').classList.toggle('active', !isLogin);
+  document.getElementById('login-form').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
 }
 
 function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  const found = store.getUsers().find(x => x.username === u && x.password === p);
-  if (!found) { document.getElementById('login-msg').textContent = 'Username atau password salah.'; return; }
+  var u = document.getElementById('login-user').value.trim();
+  var p = document.getElementById('login-pass').value;
+  var users = getUsers();
+  var found = null;
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].username === u && users[i].password === p) { found = users[i]; break; }
+  }
+  if (!found) {
+    document.getElementById('login-msg').textContent = 'Username atau password salah.';
+    return;
+  }
   currentUser = found;
   document.getElementById('login-msg').textContent = '';
   launchApp();
 }
 
 function doRegister() {
-  const u = document.getElementById('reg-user').value.trim();
-  const p = document.getElementById('reg-pass').value;
-  const r = document.getElementById('reg-role').value;
-  if (!u || p.length < 6) { document.getElementById('reg-msg').style.color = 'var(--red)'; document.getElementById('reg-msg').textContent = 'Username wajib diisi, password min. 6 karakter.'; return; }
-  const users = store.getUsers();
-  if (users.find(x => x.username === u)) { document.getElementById('reg-msg').style.color = 'var(--red)'; document.getElementById('reg-msg').textContent = 'Username sudah terdaftar.'; return; }
+  var u = document.getElementById('reg-user').value.trim();
+  var p = document.getElementById('reg-pass').value;
+  var r = document.getElementById('reg-role').value;
+  var msgEl = document.getElementById('reg-msg');
+  if (!u || p.length < 6) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Username wajib diisi, password min. 6 karakter.';
+    return;
+  }
+  var users = getUsers();
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].username === u) {
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = 'Username sudah terdaftar.';
+      return;
+    }
+  }
   users.push({ username: u, password: p, role: r });
-  store.saveUsers(users);
-  document.getElementById('reg-msg').style.color = 'var(--green)';
-  document.getElementById('reg-msg').textContent = 'Akun berhasil dibuat! Silakan masuk.';
-  setTimeout(() => switchAuthTab('login'), 1200);
+  saveUsers(users);
+  msgEl.style.color = 'var(--green)';
+  msgEl.textContent = 'Akun berhasil dibuat! Silakan masuk.';
+  setTimeout(function() { switchAuthTab('login'); }, 1200);
 }
 
 function launchApp() {
@@ -688,28 +812,44 @@ function launchApp() {
   document.getElementById('app').style.display = 'block';
   document.getElementById('user-display').textContent = currentUser.username + ' · ' + currentUser.role;
   document.getElementById('user-avatar').textContent = currentUser.username[0].toUpperCase();
-  if (currentUser.role === 'Supervisor IC') document.getElementById('admin-tab').style.display = '';
-  addLog(`Login berhasil sebagai ${currentUser.username} (${currentUser.role})`, 'ok');
+  if (currentUser.role === 'Supervisor IC') {
+    document.getElementById('admin-tab').style.display = '';
+  }
+  addLog('Login berhasil sebagai ' + currentUser.username + ' (' + currentUser.role + ')', 'ok');
   refreshAll();
 }
 
 function logout() {
-  addLog(`Logout: ${currentUser.username}`, 'info');
+  addLog('Logout: ' + currentUser.username, 'info');
   currentUser = null;
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('admin-tab').style.display = 'none';
 }
 
-// ============================================================
-// NAVIGATION — FIXED (no event dependency)
-// ============================================================
-function showPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (el) el.classList.add('active');
+// ════════════════════════════════════════
+//  NAVIGATION — BUG FIX UTAMA
+//  Sebelumnya menggunakan event.currentTarget yang tidak reliable
+//  Sekarang tab element dikirim langsung sebagai parameter
+// ════════════════════════════════════════
+function showPage(name, tabEl) {
+  // Sembunyikan semua page
+  var pages = document.querySelectorAll('.page');
+  for (var i = 0; i < pages.length; i++) {
+    pages[i].classList.remove('active');
+  }
+  // Nonaktifkan semua tab
+  var tabs = document.querySelectorAll('.nav-tab');
+  for (var j = 0; j < tabs.length; j++) {
+    tabs[j].classList.remove('active');
+  }
+  // Tampilkan page yang dipilih
+  var target = document.getElementById('page-' + name);
+  if (target) target.classList.add('active');
+  // Aktifkan tab yang diklik
+  if (tabEl) tabEl.classList.add('active');
 
+  // Render konten halaman
   if (name === 'trends') renderTrendCharts();
   if (name === 'bva') renderBvaCharts();
   if (name === 'data') renderTable();
@@ -718,106 +858,137 @@ function showPage(name, el) {
   if (name === 'log') renderLog();
 }
 
-// ============================================================
-// STATUS LOGIC
-// ============================================================
+// ════════════════════════════════════════
+//  STATUS LOGIC
+// ════════════════════════════════════════
 function getStatus(p) {
   if (p.ln < 0 || p.portal < 0 || (p.ln - p.portal) < 0) return 'neg';
   if (p.ln !== p.portal) return 'mismatch';
   return 'match';
 }
-
 function statusLabel(s) {
-  if (s === 'mismatch') return `<span class="status-pill mismatch"><span class="status-dot"></span>Mismatch</span>`;
-  if (s === 'neg') return `<span class="status-pill neg"><span class="status-dot"></span>DN Negatif</span>`;
-  return `<span class="status-pill match"><span class="status-dot"></span>Match</span>`;
+  if (s === 'mismatch') return '<span class="status-pill mismatch"><span class="status-dot"></span>Mismatch</span>';
+  if (s === 'neg') return '<span class="status-pill neg"><span class="status-dot"></span>DN Negatif</span>';
+  return '<span class="status-pill match"><span class="status-dot"></span>Match</span>';
 }
 
-// ============================================================
-// KPI
-// ============================================================
+// ════════════════════════════════════════
+//  KPI
+// ════════════════════════════════════════
 function calcKPI() {
-  const parts = store.getParts();
-  const mismatch = parts.filter(p => getStatus(p) === 'mismatch').length;
-  const neg = parts.filter(p => getStatus(p) === 'neg').length;
-  const match = parts.filter(p => getStatus(p) === 'match').length;
-  const acc = parts.length ? ((match / parts.length) * 100).toFixed(1) + '%' : '—';
-  return { mismatch, neg, match, total: parts.length, acc };
+  var parts = getParts();
+  var mismatch = 0, neg = 0, match = 0;
+  for (var i = 0; i < parts.length; i++) {
+    var s = getStatus(parts[i]);
+    if (s === 'mismatch') mismatch++;
+    else if (s === 'neg') neg++;
+    else match++;
+  }
+  var acc = parts.length ? ((match / parts.length) * 100).toFixed(1) + '%' : '—';
+  return { mismatch: mismatch, neg: neg, match: match, total: parts.length, acc: acc };
 }
 
 function renderKPI() {
-  const k = calcKPI();
+  var k = calcKPI();
   document.getElementById('kpi-mismatch').textContent = k.mismatch;
   document.getElementById('kpi-neg').textContent = k.neg;
   document.getElementById('kpi-acc').textContent = k.acc;
   document.getElementById('kpi-total').textContent = k.total;
-  document.getElementById('kpi-mismatch-trend').textContent = k.mismatch > 0 ? `▲ ${k.mismatch} item perlu perhatian` : '';
-  document.getElementById('kpi-neg-trend').textContent = k.neg > 0 ? `⚠ ${k.neg} perlu penanganan segera` : '✓ Tidak ada DN negatif';
-  document.getElementById('kpi-neg-trend').className = 'kpi-trend ' + (k.neg > 0 ? 'up' : 'down');
+  document.getElementById('kpi-mismatch-trend').textContent = k.mismatch > 0 ? '▲ ' + k.mismatch + ' item perlu perhatian' : '';
+  var negTrend = document.getElementById('kpi-neg-trend');
+  negTrend.textContent = k.neg > 0 ? '⚠ ' + k.neg + ' perlu penanganan segera' : '✓ Tidak ada DN negatif';
+  negTrend.className = 'kpi-trend ' + (k.neg > 0 ? 'up' : 'down');
   document.getElementById('kpi-acc-trend').textContent = k.acc !== '—' ? 'Target: ≥95%' : '';
 }
 
-// ============================================================
-// OVERVIEW CHARTS
-// ============================================================
+// ════════════════════════════════════════
+//  OVERVIEW CHARTS
+// ════════════════════════════════════════
 function renderOverviewCharts() {
-  const parts = store.getParts();
-  const mismatch = parts.filter(p => getStatus(p) === 'mismatch').length;
-  const neg = parts.filter(p => getStatus(p) === 'neg').length;
-  const match = parts.filter(p => getStatus(p) === 'match').length;
+  var parts = getParts();
+  var mismatch = 0, neg = 0, match = 0;
+  var a0 = 0, a1 = 0, a2 = 0, a3 = 0;
+  for (var i = 0; i < parts.length; i++) {
+    var s = getStatus(parts[i]);
+    if (s === 'mismatch') mismatch++;
+    else if (s === 'neg') neg++;
+    else match++;
+    var ag = parts[i].aging;
+    if (ag === 0) a0++;
+    else if (ag <= 3) a1++;
+    else if (ag <= 7) a2++;
+    else a3++;
+  }
 
   destroyChart('chart-dist');
   charts['chart-dist'] = new Chart(document.getElementById('chart-dist'), {
     type: 'bar',
     data: {
       labels: ['Match', 'Mismatch', 'DN Negatif'],
-      datasets: [{ data: [match, mismatch, neg], backgroundColor: ['rgba(63,185,80,.7)', 'rgba(248,81,73,.7)', 'rgba(210,153,34,.7)'], borderColor: ['#3fb950', '#f85149', '#d29922'], borderWidth: 1, borderRadius: 6 }]
+      datasets: [{
+        data: [match, mismatch, neg],
+        backgroundColor: ['rgba(63,185,80,.7)', 'rgba(248,81,73,.7)', 'rgba(210,153,34,.7)'],
+        borderColor: ['#3fb950', '#f85149', '#d29922'],
+        borderWidth: 1, borderRadius: 6,
+      }]
     },
     options: defaultBarOpts('Jumlah Part')
   });
 
-  const a0 = parts.filter(p => p.aging === 0).length;
-  const a1 = parts.filter(p => p.aging >= 1 && p.aging <= 3).length;
-  const a2 = parts.filter(p => p.aging > 3 && p.aging <= 7).length;
-  const a3 = parts.filter(p => p.aging > 7).length;
   destroyChart('chart-aging');
   charts['chart-aging'] = new Chart(document.getElementById('chart-aging'), {
     type: 'bar',
     data: {
       labels: ['0 hari', '1-3 hari', '4-7 hari', '>7 hari'],
-      datasets: [{ data: [a0, a1, a2, a3], backgroundColor: ['rgba(63,185,80,.7)', 'rgba(121,192,255,.7)', 'rgba(210,153,34,.7)', 'rgba(248,81,73,.7)'], borderColor: ['#3fb950', '#79c0ff', '#d29922', '#f85149'], borderWidth: 1, borderRadius: 6 }]
+      datasets: [{
+        data: [a0, a1, a2, a3],
+        backgroundColor: ['rgba(63,185,80,.7)', 'rgba(121,192,255,.7)', 'rgba(210,153,34,.7)', 'rgba(248,81,73,.7)'],
+        borderColor: ['#3fb950', '#79c0ff', '#d29922', '#f85149'],
+        borderWidth: 1, borderRadius: 6,
+      }]
     },
     options: defaultBarOpts('Jumlah Part')
   });
 
-  const recentMis = parts.filter(p => getStatus(p) !== 'match');
+  // Recent mismatch table
+  var recentMis = parts.filter(function(p) { return getStatus(p) !== 'match'; });
   document.getElementById('badge-recent').textContent = recentMis.length + ' item';
-  const tbody = document.getElementById('tbl-recent');
-  if (!recentMis.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">Semua data sinkron ✅</td></tr>`; return; }
-  tbody.innerHTML = recentMis.map(p => {
-    const s = getStatus(p); const diff = p.ln - p.portal;
-    return `<tr>
-      <td style="font-family:'IBM Plex Mono',monospace;font-weight:600">${p.part}</td>
-      <td>${p.ln.toLocaleString()}</td>
-      <td>${p.portal.toLocaleString()}</td>
-      <td style="color:${Math.abs(diff) > 0 ? 'var(--red)' : 'var(--green)'}">${diff > 0 ? '+' : ''}${diff.toLocaleString()}</td>
-      <td><span style="color:${p.aging > 3 ? 'var(--orange)' : 'var(--text)'}">${p.aging}</span></td>
-      <td>${statusLabel(s)}</td>
-    </tr>`;
+  var tbody = document.getElementById('tbl-recent');
+  if (!recentMis.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">Semua data sinkron ✅</td></tr>';
+    return;
+  }
+  tbody.innerHTML = recentMis.map(function(p) {
+    var s = getStatus(p);
+    var diff = p.ln - p.portal;
+    return '<tr>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600">' + p.part + '</td>' +
+      '<td>' + p.ln.toLocaleString() + '</td>' +
+      '<td>' + p.portal.toLocaleString() + '</td>' +
+      '<td style="color:' + (Math.abs(diff) > 0 ? 'var(--red)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td>' +
+      '<td><span style="color:' + (p.aging > 3 ? 'var(--orange)' : 'var(--text)') + '">' + p.aging + '</span></td>' +
+      '<td>' + statusLabel(s) + '</td>' +
+    '</tr>';
   }).join('');
 }
 
-// ============================================================
-// TREND CHARTS
-// ============================================================
-const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+// ════════════════════════════════════════
+//  TREND CHARTS
+// ════════════════════════════════════════
+var days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
-function genTrendData(base, len = 7, variance = 3) {
-  return Array.from({ length: len }, (_, i) => Math.max(0, base + Math.round((Math.random() - .4) * variance * 2) - i));
+function genTrendData(base, len, variance) {
+  len = len || 7; variance = variance || 3;
+  var result = [];
+  for (var i = 0; i < len; i++) {
+    result.push(Math.max(0, base + Math.round((Math.random() - 0.4) * variance * 2) - i));
+  }
+  return result;
 }
 
 function renderTrendCharts() {
-  const k = calcKPI();
+  var k = calcKPI();
+  var parts = getParts();
 
   destroyChart('chart-trend-mismatch');
   charts['chart-trend-mismatch'] = new Chart(document.getElementById('chart-trend-mismatch'), {
@@ -825,21 +996,29 @@ function renderTrendCharts() {
     data: {
       labels: days,
       datasets: [{
-        label: 'Mismatch', data: genTrendData(k.mismatch + 3),
-        borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,.12)', fill: true, tension: .4, pointRadius: 4, pointBackgroundColor: '#f85149'
+        label: 'Mismatch',
+        data: genTrendData(k.mismatch + 3),
+        borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,.12)',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#f85149',
       }]
     },
     options: defaultLineOpts('Jumlah Item')
   });
 
   destroyChart('chart-trend-acc');
+  var aData = [];
+  for (var i = 0; i < 7; i++) {
+    aData.push(parseFloat(Math.min(99.9, 70 + i * 2.5 + Math.random() * 3).toFixed(1)));
+  }
   charts['chart-trend-acc'] = new Chart(document.getElementById('chart-trend-acc'), {
     type: 'line',
     data: {
       labels: days,
       datasets: [{
-        label: 'Akurasi (%)', data: Array.from({ length: 7 }, (_, i) => parseFloat((Math.min(99.9, 70 + i * 2.5 + Math.random() * 3)).toFixed(1))),
-        borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,.12)', fill: true, tension: .4, pointRadius: 4, pointBackgroundColor: '#3fb950'
+        label: 'Akurasi (%)',
+        data: aData,
+        borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,.12)',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#3fb950',
       }]
     },
     options: defaultLineOpts('Akurasi (%)')
@@ -850,64 +1029,84 @@ function renderTrendCharts() {
     type: 'bar',
     data: {
       labels: days,
-      datasets: [{ label: 'DN Negatif', data: genTrendData(k.neg + 2, 7, 2), backgroundColor: 'rgba(210,153,34,.6)', borderColor: '#d29922', borderWidth: 1, borderRadius: 4 }]
+      datasets: [{
+        label: 'DN Negatif',
+        data: genTrendData(k.neg + 2, 7, 2),
+        backgroundColor: 'rgba(210,153,34,.6)', borderColor: '#d29922', borderWidth: 1, borderRadius: 4,
+      }]
     },
     options: defaultBarOpts('Jumlah Item')
   });
 
-  const parts = store.getParts();
-  const top6 = parts.filter(p => p.ln !== p.portal).sort((a, b) => Math.abs(b.ln - b.portal) - Math.abs(a.ln - a.portal)).slice(0, 6);
+  var top6 = parts.filter(function(p) { return p.ln !== p.portal; })
+    .sort(function(a, b) { return Math.abs(b.ln - b.portal) - Math.abs(a.ln - a.portal); })
+    .slice(0, 6);
   destroyChart('chart-selisih');
   charts['chart-selisih'] = new Chart(document.getElementById('chart-selisih'), {
     type: 'bar',
     data: {
-      labels: top6.map(p => p.part.slice(-10)),
+      labels: top6.map(function(p) { return p.part.slice(-8); }),
       datasets: [{
-        label: 'Selisih (Infor LN - Portal)', data: top6.map(p => p.ln - p.portal),
-        backgroundColor: top6.map(p => (p.ln - p.portal) < 0 ? 'rgba(248,81,73,.7)' : 'rgba(121,192,255,.7)'),
-        borderColor: top6.map(p => (p.ln - p.portal) < 0 ? '#f85149' : '#79c0ff'),
-        borderWidth: 1, borderRadius: 4
+        label: 'Selisih (Infor LN - Portal)',
+        data: top6.map(function(p) { return p.ln - p.portal; }),
+        backgroundColor: top6.map(function(p) { return (p.ln - p.portal) < 0 ? 'rgba(248,81,73,.7)' : 'rgba(121,192,255,.7)'; }),
+        borderColor: top6.map(function(p) { return (p.ln - p.portal) < 0 ? '#f85149' : '#79c0ff'; }),
+        borderWidth: 1, borderRadius: 4,
       }]
     },
     options: defaultBarOpts('Selisih Qty')
   });
 
-  const mis = parts.filter(p => getStatus(p) === 'mismatch').length;
-  const negC = parts.filter(p => getStatus(p) === 'neg').length;
-  const mat = parts.filter(p => getStatus(p) === 'match').length;
+  var mis = 0, neg = 0, mat = 0;
+  for (var j = 0; j < parts.length; j++) {
+    var st = getStatus(parts[j]);
+    if (st === 'mismatch') mis++;
+    else if (st === 'neg') neg++;
+    else mat++;
+  }
+  var total = mat + mis + neg || 1;
   destroyChart('chart-donut');
   charts['chart-donut'] = new Chart(document.getElementById('chart-donut'), {
     type: 'doughnut',
     data: {
       labels: ['Match', 'Mismatch', 'DN Negatif'],
-      datasets: [{ data: [mat, mis, negC], backgroundColor: ['rgba(63,185,80,.8)', 'rgba(248,81,73,.8)', 'rgba(210,153,34,.8)'], borderColor: ['#3fb950', '#f85149', '#d29922'], borderWidth: 2 }]
+      datasets: [{
+        data: [mat, mis, neg],
+        backgroundColor: ['rgba(63,185,80,.8)', 'rgba(248,81,73,.8)', 'rgba(210,153,34,.8)'],
+        borderColor: ['#3fb950', '#f85149', '#d29922'],
+        borderWidth: 2,
+      }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '65%',
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.label}: ${c.raw} (${((c.raw / (mat + mis + negC || 1)) * 100).toFixed(1)}%)` } } }
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(c) { return c.label + ': ' + c.raw + ' (' + ((c.raw / total) * 100).toFixed(1) + '%)'; } } }
+      }
     }
   });
 
-  const total = mat + mis + negC || 1;
-  document.getElementById('donut-legend').innerHTML = [
+  var legData = [
     { label: 'Match', color: '#3fb950', val: mat },
     { label: 'Mismatch', color: '#f85149', val: mis },
-    { label: 'DN Negatif', color: '#d29922', val: negC }
-  ].map(d => `
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:12px;height:12px;background:${d.color};border-radius:3px;flex-shrink:0"></div>
-      <div><div style="font-size:13px;font-weight:600">${d.label}</div>
-      <div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">${d.val} part · ${((d.val / total) * 100).toFixed(1)}%</div></div>
-    </div>`).join('');
+    { label: 'DN Negatif', color: '#d29922', val: neg }
+  ];
+  document.getElementById('donut-legend').innerHTML = legData.map(function(d) {
+    return '<div style="display:flex;align-items:center;gap:10px">' +
+      '<div style="width:12px;height:12px;background:' + d.color + ';border-radius:3px;flex-shrink:0"></div>' +
+      '<div><div style="font-size:13px;font-weight:600">' + d.label + '</div>' +
+      '<div style="font-size:11px;color:var(--text-muted);font-family:\'IBM Plex Mono\',monospace">' + d.val + ' part · ' + ((d.val / total) * 100).toFixed(1) + '%</div></div>' +
+    '</div>';
+  }).join('');
 }
 
-// ============================================================
-// BVA CHARTS
-// ============================================================
+// ════════════════════════════════════════
+//  BVA CHARTS
+// ════════════════════════════════════════
 function renderBvaCharts() {
-  const cats = ['Deteksi Mismatch', 'Verifikasi DN Neg', 'Proses Manual'];
-  const before = [75, 25, 37.5];
-  const after = [1, 5, 5];
+  var cats = ['Deteksi Mismatch', 'Verifikasi DN Neg', 'Proses Manual'];
+  var before = [75, 25, 37.5];
+  var after = [1, 5, 5];
 
   destroyChart('chart-bva-time');
   charts['chart-bva-time'] = new Chart(document.getElementById('chart-bva-time'), {
@@ -916,12 +1115,16 @@ function renderBvaCharts() {
       labels: cats,
       datasets: [
         { label: 'Before (menit)', data: before, backgroundColor: 'rgba(248,81,73,.7)', borderColor: '#f85149', borderWidth: 1, borderRadius: 4 },
-        { label: 'After (menit)', data: after, backgroundColor: 'rgba(63,185,80,.7)', borderColor: '#3fb950', borderWidth: 1, borderRadius: 4 }
+        { label: 'After (menit)', data: after, backgroundColor: 'rgba(63,185,80,.7)', borderColor: '#3fb950', borderWidth: 1, borderRadius: 4 },
       ]
     },
     options: {
-      ...defaultBarOpts('Menit/Hari'),
-      plugins: { legend: { labels: { color: '#e6edf3', font: { size: 12, family: 'IBM Plex Sans' } } }, tooltip: { mode: 'index' } }
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#e6edf3', font: { size: 12, family: 'IBM Plex Sans' } } }, tooltip: { mode: 'index' } },
+      scales: {
+        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
+        y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Menit/Hari', color: '#7d8590', font: { size: 11 } } }
+      }
     }
   });
 
@@ -931,141 +1134,168 @@ function renderBvaCharts() {
     data: {
       labels: ['Before', 'After', 'Penghematan'],
       datasets: [{
-        label: 'Biaya Waktu (Rp)', data: [3575000, 237500, 3337500],
+        label: 'Biaya Waktu (Rp)',
+        data: [3575000, 237500, 3337500],
         backgroundColor: ['rgba(248,81,73,.7)', 'rgba(63,185,80,.7)', 'rgba(121,192,255,.7)'],
-        borderColor: ['#f85149', '#3fb950', '#79c0ff'], borderWidth: 1, borderRadius: 4
+        borderColor: ['#f85149', '#3fb950', '#79c0ff'],
+        borderWidth: 1, borderRadius: 4,
       }]
     },
     options: {
-      ...defaultBarOpts('Rp/Bulan'),
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `Rp ${c.raw.toLocaleString('id-ID')}` } } }
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return 'Rp ' + c.raw.toLocaleString('id-ID'); } } } },
+      scales: {
+        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { display: false }, border: { color: 'var(--border)' } },
+        y: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,.5)' }, border: { color: 'var(--border)' }, title: { display: true, text: 'Rp/Bulan', color: '#7d8590', font: { size: 11 } } }
+      }
     }
   });
 }
 
-// ============================================================
-// DN HANDLER
-// ============================================================
+// ════════════════════════════════════════
+//  DN HANDLER
+// ════════════════════════════════════════
 function renderDnHandler() {
-  const parts = store.getParts();
-  const negParts = parts.filter(p => getStatus(p) === 'neg' || p.ln < 0 || p.portal < 0);
+  var parts = getParts();
+  var negParts = parts.filter(function(p) { return getStatus(p) === 'neg' || p.ln < 0 || p.portal < 0; });
   document.getElementById('dn-count-badge').textContent = negParts.length + ' item perlu penanganan';
-  const container = document.getElementById('dn-items-list');
+  var container = document.getElementById('dn-items-list');
   if (!negParts.length) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div>`;
+    container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada DN negatif terdeteksi</div></div>';
     return;
   }
-  container.innerHTML = negParts.map(p => {
-    const diff = p.ln - p.portal;
-    const resolved = p.resolvedDn;
-    return `<div class="dn-item ${resolved ? 'dn-resolved' : ''}" id="dn-item-${p.id}">
-      <div class="dn-item-info">
-        <div class="dn-item-part">${p.part}</div>
-        <div class="dn-item-desc">Infor LN: ${p.ln} · Portal E-WH: ${p.portal} · Aging: ${p.aging} hari</div>
-      </div>
-      <div>
-        <div class="dn-item-val">${diff}</div>
-        <div class="dn-item-val-label">Outstanding DN</div>
-      </div>
-      <div class="dn-item-actions">
-        ${resolved
-          ? `<span class="resolved-badge">✓ Resolved</span>`
-          : `<button class="btn-sm btn-danger" onclick="escalateDn(${p.id})">⚡ Eskalasi</button>
-             <button class="btn-sm btn-success" onclick="resolveDn(${p.id})">✓ Resolve</button>`}
-      </div>
-    </div>`;
+  container.innerHTML = negParts.map(function(p) {
+    var diff = p.ln - p.portal;
+    var resolved = p.resolvedDn;
+    return '<div class="dn-item ' + (resolved ? 'dn-resolved' : '') + '" id="dn-item-' + p.id + '">' +
+      '<div class="dn-item-info">' +
+        '<div class="dn-item-part">' + p.part + '</div>' +
+        '<div class="dn-item-desc">Infor LN: ' + p.ln + ' · Portal E-WH: ' + p.portal + ' · Aging: ' + p.aging + ' hari</div>' +
+      '</div>' +
+      '<div><div class="dn-item-val">' + diff + '</div><div class="dn-item-val-label">Outstanding DN</div></div>' +
+      '<div class="dn-item-actions">' +
+        (resolved
+          ? '<span class="resolved-badge">✓ Resolved</span>'
+          : '<button class="btn-sm btn-danger" onclick="escalateDn(' + p.id + ')">⚡ Eskalasi</button>' +
+            '<button class="btn-sm btn-success" onclick="resolveDn(' + p.id + ')">✓ Resolve</button>') +
+      '</div>' +
+    '</div>';
   }).join('');
   renderDnLog();
 }
 
 function escalateDn(id) {
-  const p = store.getParts().find(x => x.id === id);
+  var parts = getParts();
+  var p = null;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
   if (!p) return;
-  addDnLog(`[ESKALASI] Part ${p.part}: Outstanding DN=${p.ln - p.portal} — Diteruskan ke Supervisor IC/PPIC untuk persetujuan auto-reverse.`, 'warn');
-  addLog(`Eskalasi DN negatif: ${p.part} (selisih ${p.ln - p.portal})`, 'warn');
-  alert(`✅ Eskalasi berhasil!\n\nPart ${p.part} telah diteruskan ke Supervisor IC untuk persetujuan auto-reverse DN.\n\nOutstanding DN: ${p.ln - p.portal}\n\nProses akan berlanjut setelah approval diberikan.`);
+  addDnLog('[ESKALASI] Part ' + p.part + ': Outstanding DN=' + (p.ln - p.portal) + ' — Diteruskan ke Supervisor IC/PPIC untuk persetujuan auto-reverse.', 'warn');
+  addLog('Eskalasi DN negatif: ' + p.part + ' (selisih ' + (p.ln - p.portal) + ')', 'warn');
+  alert('✅ Eskalasi berhasil!\n\nPart ' + p.part + ' telah diteruskan ke Supervisor IC untuk persetujuan auto-reverse DN.\n\nOutstanding DN: ' + (p.ln - p.portal) + '\n\nProses akan berlanjut setelah approval diberikan.');
 }
 
 function resolveDn(id) {
-  const parts = store.getParts();
-  const idx = parts.findIndex(x => x.id === id);
+  var parts = getParts();
+  var idx = -1;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { idx = i; break; } }
   if (idx < 0) return;
-  const p = parts[idx];
-  if (!confirm(`Resolve DN negatif untuk part ${p.part}?\nOutstanding DN akan di-set ke 0 (auto-reverse).\n\nPastikan PO terkait telah dikonfirmasi dibatalkan.`)) return;
-  const oldLn = p.ln;
+  var p = parts[idx];
+  if (!confirm('Resolve DN negatif untuk part ' + p.part + '?\nOutstanding DN akan di-set ke 0 (auto-reverse).\n\nPastikan PO terkait telah dikonfirmasi dibatalkan.')) return;
+  var oldLn = p.ln;
   parts[idx].ln = parts[idx].portal;
   parts[idx].resolvedDn = true;
-  store.saveParts(parts);
-  addDnLog(`[RESOLVED] Auto-Reverse DN: Part ${p.part} — Qty Infor LN disesuaikan ${oldLn} → ${p.portal}. Outstanding DN = 0.`, 'ok');
-  addLog(`DN Negatif diselesaikan: ${p.part} — auto-reverse sukses`, 'ok');
+  saveParts(parts);
+  addDnLog('[RESOLVED] Auto-Reverse DN: Part ' + p.part + ' — Qty Infor LN disesuaikan ' + oldLn + ' → ' + p.portal + '. Outstanding DN = 0.', 'ok');
+  addLog('DN Negatif diselesaikan: ' + p.part + ' — auto-reverse sukses', 'ok');
   renderDnHandler();
   refreshAll();
 }
 
 function renderDnLog() {
-  const logs = store.getDnLogs();
-  const el = document.getElementById('dn-log');
+  var logs = getDnLogs();
+  var el = document.getElementById('dn-log');
   if (!el) return;
-  if (!logs.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada log penanganan DN</div></div>'; return; }
-  el.innerHTML = logs.map(l => `
-    <div class="log-item">
-      <span class="log-time">${l.time}</span>
-      <span class="log-msg">${l.msg}</span>
-      <span class="log-type ${l.type}">${l.type.toUpperCase()}</span>
-    </div>`).join('');
+  if (!logs.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada log penanganan DN</div></div>';
+    return;
+  }
+  el.innerHTML = logs.map(function(l) {
+    return '<div class="log-item">' +
+      '<span class="log-time">' + l.time + '</span>' +
+      '<span class="log-msg">' + l.msg + '</span>' +
+      '<span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span>' +
+    '</div>';
+  }).join('');
 }
 
-// ============================================================
-// DATA TABLE
-// ============================================================
+// ════════════════════════════════════════
+//  DATA TABLE
+// ════════════════════════════════════════
 function addPart() {
-  const part = document.getElementById('inp-part').value.trim();
-  const ln = parseInt(document.getElementById('inp-ln').value) || 0;
-  const portal = parseInt(document.getElementById('inp-portal').value) || 0;
-  const aging = parseInt(document.getElementById('inp-aging').value) || 0;
+  var part = document.getElementById('inp-part').value.trim();
+  var ln = parseInt(document.getElementById('inp-ln').value) || 0;
+  var portal = parseInt(document.getElementById('inp-portal').value) || 0;
+  var aging = parseInt(document.getElementById('inp-aging').value) || 0;
   if (!part) { alert('Part number wajib diisi!'); return; }
-  const parts = store.getParts();
-  if (parts.find(p => p.part === part)) { alert('Part sudah ada!'); return; }
-  parts.push({ id: Date.now(), part, ln, portal, aging, resolvedDn: false });
-  store.saveParts(parts);
-  addLog(`Part baru ditambahkan: ${part} (LN:${ln}, Portal:${portal})`, 'ok');
-  ['inp-part', 'inp-ln', 'inp-portal', 'inp-aging'].forEach(id => document.getElementById(id).value = '');
+  var parts = getParts();
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i].part === part) { alert('Part sudah ada!'); return; }
+  }
+  var id = Date.now();
+  parts.push({ id: id, part: part, ln: ln, portal: portal, aging: aging, resolvedDn: false });
+  saveParts(parts);
+  addLog('Part baru ditambahkan: ' + part + ' (LN:' + ln + ', Portal:' + portal + ')', 'ok');
+  document.getElementById('inp-part').value = '';
+  document.getElementById('inp-ln').value = '';
+  document.getElementById('inp-portal').value = '';
+  document.getElementById('inp-aging').value = '';
   renderTable();
   refreshKPI();
 }
 
 function renderTable() {
-  const parts = store.getParts();
-  const fStatus = document.getElementById('filter-status').value;
-  const fSearch = document.getElementById('filter-search').value.toLowerCase();
-  const filtered = parts.filter(p => {
-    const s = getStatus(p);
-    const matchStatus = fStatus === 'all' || (fStatus === 'mismatch' && s === 'mismatch') || (fStatus === 'match' && s === 'match') || (fStatus === 'neg' && s === 'neg') || (fStatus === 'aging' && p.aging > 3);
-    const matchSearch = !fSearch || p.part.toLowerCase().includes(fSearch);
+  var parts = getParts();
+  var fStatus = document.getElementById('filter-status').value;
+  var fSearch = document.getElementById('filter-search').value.toLowerCase();
+  var filtered = parts.filter(function(p) {
+    var s = getStatus(p);
+    var matchStatus = fStatus === 'all' ||
+      (fStatus === 'mismatch' && s === 'mismatch') ||
+      (fStatus === 'match' && s === 'match') ||
+      (fStatus === 'neg' && s === 'neg') ||
+      (fStatus === 'aging' && p.aging > 3);
+    var matchSearch = !fSearch || p.part.toLowerCase().indexOf(fSearch) !== -1;
     return matchStatus && matchSearch;
   });
-  const canEdit = currentUser && (currentUser.role === 'Supervisor IC' || currentUser.role === 'Staff IC');
-  const tbody = document.getElementById('tbl-main');
-  if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Tidak ada data ditemukan</td></tr>`; return; }
-  tbody.innerHTML = filtered.map(p => {
-    const s = getStatus(p); const diff = p.ln - p.portal;
-    return `<tr>
-      <td style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px">${p.part}</td>
-      <td>${p.ln.toLocaleString()}</td>
-      <td>${p.portal.toLocaleString()}</td>
-      <td style="font-family:'IBM Plex Mono',monospace;color:${diff < 0 ? 'var(--red)' : diff > 0 ? 'var(--orange)' : 'var(--green)'}">${diff > 0 ? '+' : ''}${diff.toLocaleString()}</td>
-      <td><span style="color:${p.aging > 7 ? 'var(--red)' : p.aging > 3 ? 'var(--orange)' : 'var(--text-muted)'}">${p.aging}</span></td>
-      <td>${statusLabel(s)}</td>
-      <td style="display:flex;gap:6px">
-        ${canEdit ? `<button class="btn-sm btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openEdit(${p.id})">Edit</button>` : ''}
-        ${canEdit && currentUser.role === 'Supervisor IC' ? `<button class="btn-sm btn-danger" style="padding:4px 10px;font-size:11px" onclick="deletePart(${p.id})">Del</button>` : ''}
-      </td>
-    </tr>`;
+  var canEdit = currentUser && (currentUser.role === 'Supervisor IC' || currentUser.role === 'Staff IC');
+  var canDelete = currentUser && currentUser.role === 'Supervisor IC';
+  var tbody = document.getElementById('tbl-main');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Tidak ada data ditemukan</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(function(p) {
+    var s = getStatus(p);
+    var diff = p.ln - p.portal;
+    return '<tr>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;font-size:12px">' + p.part + '</td>' +
+      '<td>' + p.ln.toLocaleString() + '</td>' +
+      '<td>' + p.portal.toLocaleString() + '</td>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace;color:' + (diff < 0 ? 'var(--red)' : diff > 0 ? 'var(--orange)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td>' +
+      '<td><span style="color:' + (p.aging > 7 ? 'var(--red)' : p.aging > 3 ? 'var(--orange)' : 'var(--text-muted)') + '">' + p.aging + '</span></td>' +
+      '<td>' + statusLabel(s) + '</td>' +
+      '<td style="display:flex;gap:6px">' +
+        (canEdit ? '<button class="btn-sm btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openEdit(' + p.id + ')">Edit</button>' : '') +
+        (canDelete ? '<button class="btn-sm btn-danger" style="padding:4px 10px;font-size:11px" onclick="deletePart(' + p.id + ')">Del</button>' : '') +
+      '</td>' +
+    '</tr>';
   }).join('');
 }
 
 function openEdit(id) {
-  const p = store.getParts().find(x => x.id === id);
+  var parts = getParts();
+  var p = null;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
   if (!p) return;
   editTarget = id;
   document.getElementById('edit-part').value = p.part;
@@ -1075,86 +1305,113 @@ function openEdit(id) {
   document.getElementById('edit-modal').classList.add('open');
 }
 
-function closeModal() { document.getElementById('edit-modal').classList.remove('open'); editTarget = null; }
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editTarget = null;
+}
 
 function saveEdit() {
   if (!editTarget) return;
-  const parts = store.getParts();
-  const idx = parts.findIndex(x => x.id === editTarget);
+  var parts = getParts();
+  var idx = -1;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === editTarget) { idx = i; break; } }
   if (idx < 0) return;
-  const old = { ...parts[idx] };
+  var old = { ln: parts[idx].ln, portal: parts[idx].portal };
   parts[idx].ln = parseInt(document.getElementById('edit-ln').value) || 0;
   parts[idx].portal = parseInt(document.getElementById('edit-portal').value) || 0;
   parts[idx].aging = parseInt(document.getElementById('edit-aging').value) || 0;
-  store.saveParts(parts);
-  addLog(`Edit part ${parts[idx].part}: LN ${old.ln}→${parts[idx].ln}, Portal ${old.portal}→${parts[idx].portal}`, 'info');
-  closeModal(); renderTable(); refreshKPI();
+  saveParts(parts);
+  addLog('Edit part ' + parts[idx].part + ': LN ' + old.ln + '→' + parts[idx].ln + ', Portal ' + old.portal + '→' + parts[idx].portal, 'info');
+  closeModal();
+  renderTable();
+  refreshKPI();
 }
 
 function deletePart(id) {
-  const p = store.getParts().find(x => x.id === id);
-  if (!confirm(`Hapus part ${p?.part}?`)) return;
-  store.saveParts(store.getParts().filter(x => x.id !== id));
-  addLog(`Part dihapus: ${p.part}`, 'warn');
-  renderTable(); refreshKPI();
+  var parts = getParts();
+  var p = null;
+  for (var i = 0; i < parts.length; i++) { if (parts[i].id === id) { p = parts[i]; break; } }
+  if (!confirm('Hapus part ' + (p ? p.part : '') + '?')) return;
+  saveParts(getParts().filter(function(x) { return x.id !== id; }));
+  addLog('Part dihapus: ' + (p ? p.part : id), 'warn');
+  renderTable();
+  refreshKPI();
 }
 
 function exportCSV() {
-  const parts = store.getParts();
-  const rows = [['Part Number', 'Qty Infor LN', 'Qty Portal E-WH', 'Selisih', 'Aging (Hari)', 'Status']];
-  parts.forEach(p => rows.push([p.part, p.ln, p.portal, p.ln - p.portal, p.aging, getStatus(p)]));
-  const csv = rows.map(r => r.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ic_data_' + Date.now() + '.csv'; a.click();
+  var parts = getParts();
+  var rows = [['Part Number', 'Qty Infor LN', 'Qty Portal E-WH', 'Selisih', 'Aging (Hari)', 'Status']];
+  parts.forEach(function(p) {
+    rows.push([p.part, p.ln, p.portal, p.ln - p.portal, p.aging, getStatus(p)]);
+  });
+  var csv = rows.map(function(r) { return r.join(','); }).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ic_data_' + Date.now() + '.csv';
+  a.click();
   addLog('Export CSV berhasil', 'ok');
 }
 
-// ============================================================
-// LOG
-// ============================================================
+// ════════════════════════════════════════
+//  LOG
+// ════════════════════════════════════════
 function renderLog() {
-  const logs = store.getLogs();
-  const el = document.getElementById('main-log');
+  var logs = getLogs();
+  var el = document.getElementById('main-log');
   if (!el) return;
-  if (!logs.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div>'; return; }
-  el.innerHTML = logs.map(l => `
-    <div class="log-item">
-      <span class="log-time">${l.time}</span>
-      <span class="log-msg">[${l.user || 'system'}] ${l.msg}</span>
-      <span class="log-type ${l.type}">${l.type.toUpperCase()}</span>
-    </div>`).join('');
+  if (!logs.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas</div></div>';
+    return;
+  }
+  el.innerHTML = logs.map(function(l) {
+    return '<div class="log-item">' +
+      '<span class="log-time">' + l.time + '</span>' +
+      '<span class="log-msg">[' + (l.user || 'system') + '] ' + l.msg + '</span>' +
+      '<span class="log-type ' + l.type + '">' + l.type.toUpperCase() + '</span>' +
+    '</div>';
+  }).join('');
 }
 
 function clearLog() {
   if (!confirm('Hapus semua log?')) return;
-  store.saveLogs([]);
+  saveLogs([]);
   renderLog();
 }
 
-// ============================================================
-// ADMIN
-// ============================================================
+// ════════════════════════════════════════
+//  ADMIN
+// ════════════════════════════════════════
 function renderAdminTable() {
-  const users = store.getUsers();
-  document.getElementById('tbl-admin').innerHTML = users.map(u => `<tr>
-    <td style="font-family:'IBM Plex Mono',monospace">${u.username}</td>
-    <td><span class="role-badge ${u.role === 'Supervisor IC' ? 'supervisor' : 'staff'}">${u.role}</span></td>
-    <td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser('${u.username}')">Hapus</button></td>
-  </tr>`).join('');
+  var users = getUsers();
+  var tbody = document.getElementById('tbl-admin');
+  tbody.innerHTML = users.map(function(u) {
+    var roleClass = u.role === 'Supervisor IC' ? 'supervisor' : 'staff';
+    return '<tr>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace">' + u.username + '</td>' +
+      '<td><span class="role-badge ' + roleClass + '">' + u.role + '</span></td>' +
+      '<td><button class="btn-sm btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteUser(\'' + u.username + '\')">Hapus</button></td>' +
+    '</tr>';
+  }).join('');
 }
 
 function deleteUser(username) {
-  if (username === currentUser?.username) { alert('Tidak dapat menghapus akun sendiri.'); return; }
-  if (!confirm(`Hapus pengguna "${username}"?`)) return;
-  store.saveUsers(store.getUsers().filter(u => u.username !== username));
-  addLog(`Akun dihapus: ${username}`, 'warn');
+  if (currentUser && username === currentUser.username) {
+    alert('Tidak dapat menghapus akun sendiri.');
+    return;
+  }
+  if (!confirm('Hapus pengguna "' + username + '"?')) return;
+  saveUsers(getUsers().filter(function(u) { return u.username !== username; }));
+  addLog('Akun dihapus: ' + username, 'warn');
   renderAdminTable();
 }
 
-// ============================================================
-// CHART HELPERS
-// ============================================================
-function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+// ════════════════════════════════════════
+//  CHART HELPERS
+// ════════════════════════════════════════
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
 
 function defaultLineOpts(yLabel) {
   return {
@@ -1178,15 +1435,15 @@ function defaultBarOpts(yLabel) {
   };
 }
 
-// ============================================================
-// REFRESH
-// ============================================================
+// ════════════════════════════════════════
+//  REFRESH
+// ════════════════════════════════════════
 function refreshKPI() { renderKPI(); renderOverviewCharts(); }
 function refreshAll() { renderKPI(); renderOverviewCharts(); }
 
-// ============================================================
-// INIT
-// ============================================================
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
 seedData();
 </script>
 </body>
