@@ -7,7 +7,73 @@
 <title>IC Monitoring Dashboard — PT Inkoasku</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
+  /* ── IMPORT EXCEL ── */
+.import-zone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--bg);
+  position: relative;
+}
+.import-zone:hover, .import-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(31,111,235,.06);
+}
+.import-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.import-zone-icon { font-size: 32px; margin-bottom: 8px; }
+.import-zone-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.import-zone-sub { font-size: 12px; color: var(--text-muted); }
+.import-preview {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+.import-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+}
+.import-preview-table { max-height: 260px; overflow-y: auto; }
+.import-progress {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 12px;
+  display: none;
+}
+.import-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+.template-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(31,111,235,.08);
+  border: 1px solid rgba(31,111,235,.2);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--cyan);
+  margin-bottom: 16px;
+}
 :root {
   --bg: #0d1117;
   --surface: #161b22;
@@ -572,65 +638,123 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       </div>
     </div>
 
-    <!-- ══════════════ PAGE: DATA ══════════════ -->
-    <div class="page" id="page-data">
-      <div class="card" style="margin-bottom:20px">
-        <div class="section-title" style="margin-bottom:16px">Tambah / Import Data Part</div>
-        <div class="input-grid">
-          <div class="input-group">
-            <label>Part Number</label>
-            <input type="text" id="inp-part" placeholder="STL000XXX"/>
-          </div>
-          <div class="input-group">
-            <label>Qty Infor LN</label>
-            <input type="number" id="inp-ln" placeholder="0"/>
-          </div>
-          <div class="input-group">
-            <label>Qty Portal E-WH</label>
-            <input type="number" id="inp-portal" placeholder="0"/>
-          </div>
-          <div class="input-group">
-            <label>Aging (Hari)</label>
-            <input type="number" id="inp-aging" placeholder="0" min="0"/>
-          </div>
-          <div class="input-group">
-            <label>&nbsp;</label>
-            <button class="btn-sm btn-accent" onclick="addPart()">+ Tambah</button>
-          </div>
-        </div>
+<!-- ══════════════ PAGE: DATA ══════════════ -->
+<div class="page" id="page-data">
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-title" style="margin-bottom:16px">Tambah / Import Data Part</div>
+    <div class="input-grid">
+      <div class="input-group">
+        <label>Part Number</label>
+        <input type="text" id="inp-part" placeholder="STL000XXX"/>
       </div>
+      <div class="input-group">
+        <label>Qty Infor LN</label>
+        <input type="number" id="inp-ln" placeholder="0"/>
+      </div>
+      <div class="input-group">
+        <label>Qty Portal E-WH</label>
+        <input type="number" id="inp-portal" placeholder="0"/>
+      </div>
+      <div class="input-group">
+        <label>Aging (Hari)</label>
+        <input type="number" id="inp-aging" placeholder="0" min="0"/>
+      </div>
+      <div class="input-group">
+        <label>&nbsp;</label>
+        <button class="btn-sm btn-accent" onclick="addPart()">+ Tambah</button>
+      </div>
+    </div>
+  </div>
 
-      <div class="card">
-        <div class="filter-bar">
-          <select id="filter-status" onchange="renderTable()">
-            <option value="all">Semua Status</option>
-            <option value="mismatch">Mismatch</option>
-            <option value="match">Match</option>
-            <option value="neg">DN Negatif</option>
-            <option value="aging">Aging &gt; 3 Hari</option>
-          </select>
-          <input type="text" id="filter-search" placeholder="🔍 Cari part number..." oninput="renderTable()" style="min-width:200px"/>
-          <div class="flex-sep"></div>
-          <button class="btn-sm btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+  <!-- ── IMPORT EXCEL CARD ── -->
+  <div class="card" style="margin-bottom:20px" id="import-card">
+    <div class="section-header" style="margin-bottom:12px">
+      <div class="section-title">Import dari Excel / CSV</div>
+      <button class="btn-sm btn-ghost" onclick="downloadTemplate()">⬇ Unduh Template</button>
+    </div>
+
+    <div class="template-hint">
+      <span>📌</span>
+      <span>Format kolom yang dibutuhkan: <strong>Part Number</strong> · <strong>Qty Infor LN</strong> · <strong>Qty Portal E-WH</strong> · <strong>Aging (Hari)</strong> — Baris pertama harus header.</span>
+    </div>
+
+    <div class="import-zone" id="import-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(event)"/>
+      <div class="import-zone-icon">📂</div>
+      <div class="import-zone-title">Klik untuk pilih file atau drag & drop di sini</div>
+      <div class="import-zone-sub">Mendukung format .xlsx · .xls · .csv</div>
+    </div>
+
+    <div class="import-progress" id="import-progress">
+      <div class="import-progress-bar" id="import-progress-bar" style="width:0%"></div>
+    </div>
+
+    <div id="import-preview-container" style="display:none">
+      <div class="import-preview">
+        <div class="import-preview-header">
+          <span id="import-preview-title">Preview Data</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="badge blue" id="import-row-count">0 baris</span>
+            <span class="badge yellow" id="import-skip-count" style="display:none">0 dilewati</span>
+            <span class="badge red" id="import-error-count" style="display:none">0 error</span>
+          </div>
         </div>
-        <div class="table-wrap">
+        <div class="import-preview-table">
           <table>
             <thead>
               <tr>
+                <th>#</th>
                 <th>Part Number</th>
                 <th>Qty Infor LN</th>
                 <th>Qty Portal E-WH</th>
-                <th>Selisih</th>
                 <th>Aging (Hari)</th>
-                <th>Status</th>
-                <th>Aksi</th>
+                <th>Validasi</th>
               </tr>
             </thead>
-            <tbody id="tbl-main"></tbody>
+            <tbody id="import-preview-tbody"></tbody>
           </table>
         </div>
       </div>
+
+      <div style="display:flex;gap:10px;margin-top:14px;align-items:center">
+        <div id="import-summary" style="font-size:12px;color:var(--text-muted);flex:1"></div>
+        <button class="btn-sm btn-ghost" onclick="resetImport()">✕ Batal</button>
+        <button class="btn-sm btn-accent" id="btn-confirm-import" onclick="confirmImport()">✔ Import Data Valid</button>
+      </div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="filter-bar">
+      <select id="filter-status" onchange="renderTable()">
+        <option value="all">Semua Status</option>
+        <option value="mismatch">Mismatch</option>
+        <option value="match">Match</option>
+        <option value="neg">DN Negatif</option>
+        <option value="aging">Aging &gt; 3 Hari</option>
+      </select>
+      <input type="text" id="filter-search" placeholder="🔍 Cari part number..." oninput="renderTable()" style="min-width:200px"/>
+      <div class="flex-sep"></div>
+      <button class="btn-sm btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Part Number</th>
+            <th>Qty Infor LN</th>
+            <th>Qty Portal E-WH</th>
+            <th>Selisih</th>
+            <th>Aging (Hari)</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-main"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
     <!-- ══════════════ PAGE: LOG ══════════════ -->
     <div class="page" id="page-log">
@@ -1489,6 +1613,255 @@ function refreshAll() { renderKPI(); renderOverviewCharts(); }
 //  INIT
 // ════════════════════════════════════════
 seedData();
+// ════════════════════════════════════════
+//  IMPORT EXCEL
+// ════════════════════════════════════════
+var importBuffer = []; // Data parsed siap diimport
+
+// Kolom header yang dikenali (case-insensitive, flexible)
+var COL_MAP = {
+  part:   ['part number', 'part no', 'part', 'partnumber', 'no part', 'kode part'],
+  ln:     ['qty infor ln', 'infor ln', 'qty ln', 'ln', 'qty_ln', 'stock ln', 'stok ln'],
+  portal: ['qty portal e-wh', 'portal e-wh', 'qty portal', 'portal', 'qty_portal', 'stock portal', 'e-wh'],
+  aging:  ['aging (hari)', 'aging', 'hari', 'aging hari', 'umur', 'days']
+};
+
+function matchHeader(name) {
+  var lower = name.toLowerCase().trim();
+  for (var key in COL_MAP) {
+    var aliases = COL_MAP[key];
+    for (var i = 0; i < aliases.length; i++) {
+      if (lower === aliases[i]) return key;
+    }
+  }
+  return null;
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('import-zone').classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  document.getElementById('import-zone').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('import-zone').classList.remove('drag-over');
+  var files = e.dataTransfer.files;
+  if (files.length) processFile(files[0]);
+}
+function handleFileSelect(e) {
+  var files = e.target.files;
+  if (files.length) processFile(files[0]);
+}
+
+function processFile(file) {
+  var ext = file.name.split('.').pop().toLowerCase();
+  if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+    alert('Format file tidak didukung. Gunakan .xlsx, .xls, atau .csv');
+    return;
+  }
+
+  // Show progress
+  var prog = document.getElementById('import-progress');
+  var progBar = document.getElementById('import-progress-bar');
+  prog.style.display = 'block';
+  progBar.style.width = '30%';
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    progBar.style.width = '70%';
+    try {
+      var data = e.target.result;
+      var workbook;
+      if (ext === 'csv') {
+        workbook = XLSX.read(data, { type: 'string' });
+      } else {
+        workbook = XLSX.read(data, { type: 'array' });
+      }
+      var sheet = workbook.Sheets[workbook.SheetNames[0]];
+      var json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+      progBar.style.width = '100%';
+      setTimeout(function() {
+        prog.style.display = 'none';
+        progBar.style.width = '0%';
+        parseAndPreview(json, file.name);
+      }, 400);
+    } catch(err) {
+      prog.style.display = 'none';
+      alert('Gagal membaca file: ' + err.message);
+    }
+  };
+  reader.onerror = function() {
+    prog.style.display = 'none';
+    alert('Gagal membaca file.');
+  };
+
+  if (ext === 'csv') {
+    reader.readAsText(file);
+  } else {
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function parseAndPreview(json, filename) {
+  if (!json.length) { alert('File kosong atau tidak memiliki data.'); return; }
+
+  // Detect header row
+  var headerRow = json[0];
+  var colIndex = { part: -1, ln: -1, portal: -1, aging: -1 };
+  for (var c = 0; c < headerRow.length; c++) {
+    var mapped = matchHeader(String(headerRow[c]));
+    if (mapped && colIndex[mapped] === -1) colIndex[mapped] = c;
+  }
+
+  if (colIndex.part === -1) {
+    alert('Kolom "Part Number" tidak ditemukan.\nPastikan header sesuai format template.\n\nHeader yang terdeteksi: ' + headerRow.join(', '));
+    return;
+  }
+
+  var existingParts = getParts();
+  var existingNos = {};
+  existingParts.forEach(function(p) { existingNos[p.part.toLowerCase()] = true; });
+
+  var valid = [], skipped = [], errors = [];
+  importBuffer = [];
+
+  for (var r = 1; r < json.length; r++) {
+    var row = json[r];
+    var partNo = String(row[colIndex.part] !== undefined ? row[colIndex.part] : '').trim();
+    if (!partNo) continue; // skip empty rows
+
+    var ln     = colIndex.ln     >= 0 ? parseInt(row[colIndex.ln])     : 0;
+    var portal = colIndex.portal >= 0 ? parseInt(row[colIndex.portal]) : 0;
+    var aging  = colIndex.aging  >= 0 ? parseInt(row[colIndex.aging])  : 0;
+    if (isNaN(ln))     ln = 0;
+    if (isNaN(portal)) portal = 0;
+    if (isNaN(aging))  aging = 0;
+
+    var rowStatus = 'valid';
+    var rowNote = '✓ Siap import';
+
+    if (existingNos[partNo.toLowerCase()]) {
+      rowStatus = 'skip';
+      rowNote = '⚠ Sudah ada';
+      skipped.push(partNo);
+    } else {
+      valid.push({ id: Date.now() + r, part: partNo, ln: ln, portal: portal, aging: aging, resolvedDn: false });
+      importBuffer.push({ id: Date.now() + r, part: partNo, ln: ln, portal: portal, aging: aging, resolvedDn: false });
+    }
+
+    (rowStatus === 'valid' ? valid : []).push && null; // already counted
+    errors; // placeholder
+
+    var tbody = document.getElementById('import-preview-tbody');
+    var rowEl = document.createElement('tr');
+    rowEl.innerHTML =
+      '<td style="color:var(--text-muted);font-size:11px;font-family:\'IBM Plex Mono\',monospace">' + r + '</td>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:600">' + partNo + '</td>' +
+      '<td>' + ln.toLocaleString() + '</td>' +
+      '<td>' + portal.toLocaleString() + '</td>' +
+      '<td>' + aging + '</td>' +
+      '<td><span style="font-size:11px;color:' + (rowStatus === 'valid' ? 'var(--green)' : 'var(--orange)') + '">' + rowNote + '</span></td>';
+    tbody ? null : 0;
+  }
+
+  // Build preview rows properly
+  var tbodyEl = document.getElementById('import-preview-tbody');
+  tbodyEl.innerHTML = '';
+  var allRows = [];
+  for (var rr = 1; rr < json.length; rr++) {
+    var rowData = json[rr];
+    var pNo = String(rowData[colIndex.part] !== undefined ? rowData[colIndex.part] : '').trim();
+    if (!pNo) continue;
+    var lnV     = colIndex.ln     >= 0 ? parseInt(rowData[colIndex.ln])     : 0;
+    var porV    = colIndex.portal >= 0 ? parseInt(rowData[colIndex.portal]) : 0;
+    var agV     = colIndex.aging  >= 0 ? parseInt(rowData[colIndex.aging])  : 0;
+    if (isNaN(lnV))  lnV  = 0;
+    if (isNaN(porV)) porV = 0;
+    if (isNaN(agV))  agV  = 0;
+    var isDup = existingNos[pNo.toLowerCase()];
+    allRows.push({ idx: rr, pNo: pNo, ln: lnV, portal: porV, aging: agV, dup: isDup });
+  }
+
+  tbodyEl.innerHTML = allRows.map(function(row) {
+    return '<tr style="' + (row.dup ? 'opacity:.5' : '') + '">' +
+      '<td style="color:var(--text-muted);font-size:11px;font-family:\'IBM Plex Mono\',monospace">' + row.idx + '</td>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:600">' + row.pNo + '</td>' +
+      '<td>' + row.ln.toLocaleString() + '</td>' +
+      '<td>' + row.portal.toLocaleString() + '</td>' +
+      '<td>' + row.aging + '</td>' +
+      '<td><span style="font-size:11px;color:' + (row.dup ? 'var(--orange)' : 'var(--green)') + '">' +
+        (row.dup ? '⚠ Sudah ada (dilewati)' : '✓ Siap import') +
+      '</span></td>' +
+    '</tr>';
+  }).join('');
+
+  // Update badges
+  var validCount = importBuffer.length;
+  var skipCount = skipped.length;
+  document.getElementById('import-row-count').textContent = validCount + ' baris valid';
+  var skipBadge = document.getElementById('import-skip-count');
+  if (skipCount > 0) {
+    skipBadge.textContent = skipCount + ' dilewati';
+    skipBadge.style.display = '';
+  } else {
+    skipBadge.style.display = 'none';
+  }
+  document.getElementById('import-error-count').style.display = 'none';
+  document.getElementById('import-preview-title').textContent = '📄 Preview: ' + filename;
+  document.getElementById('import-summary').textContent =
+    'Total ' + allRows.length + ' baris dibaca · ' + validCount + ' siap diimpor · ' + skipCount + ' dilewati (duplikat).';
+  document.getElementById('btn-confirm-import').disabled = validCount === 0;
+  document.getElementById('btn-confirm-import').textContent = validCount > 0
+    ? '✔ Import ' + validCount + ' Data Valid'
+    : '✔ Tidak ada data baru';
+
+  document.getElementById('import-preview-container').style.display = 'block';
+}
+
+function confirmImport() {
+  if (!importBuffer.length) { alert('Tidak ada data baru untuk diimport.'); return; }
+  var parts = getParts();
+  var count = 0;
+  importBuffer.forEach(function(p) {
+    parts.push(p);
+    count++;
+  });
+  saveParts(parts);
+  addLog('Import Excel berhasil: ' + count + ' part baru ditambahkan', 'ok');
+  alert('✅ Import berhasil!\n' + count + ' part baru telah ditambahkan ke sistem.');
+  resetImport();
+  renderTable();
+  refreshKPI();
+}
+
+function resetImport() {
+  importBuffer = [];
+  document.getElementById('import-preview-container').style.display = 'none';
+  document.getElementById('import-preview-tbody').innerHTML = '';
+  document.getElementById('file-input').value = '';
+  document.getElementById('import-zone').classList.remove('drag-over');
+}
+
+function downloadTemplate() {
+  if (typeof XLSX === 'undefined') {
+    alert('Library XLSX belum dimuat. Silakan refresh halaman.');
+    return;
+  }
+  var wb = XLSX.utils.book_new();
+  var data = [
+    ['Part Number', 'Qty Infor LN', 'Qty Portal E-WH', 'Aging (Hari)'],
+    ['CDICAT00-000-0099', 300, 280, 2],
+    ['STL000999-CONS', 500, 500, 0],
+    ['CINCAR00-000-0099', 120, 100, 5],
+  ];
+  var ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{ wch: 24 }, { wch: 14 }, { wch: 16 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'IC Data Template');
+  XLSX.writeFile(wb, 'IC_Import_Template.xlsx');
+  addLog('Download template Excel', 'info');
+}
 </script>
 </body>
 </html>
