@@ -372,7 +372,24 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .priority-part { font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace; }
 .priority-sub  { font-size:11px;color:var(--text-muted);margin-top:2px; }
 .priority-aging { font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700; }
-.aging-sub { font-size:10px;color:var(--text-muted);text-align:center; }  
+.aging-sub { font-size:10px;color:var(--text-muted);text-align:center; }
+/* ── RESOLUTION TIME ── */
+.resolution-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px; }
+.res-stat-card { background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;text-align:center; }
+.res-stat-val { font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace; }
+.res-stat-label { font-size:11px;color:var(--text-muted);margin-top:4px; }
+.res-item { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(48,54,61,.4); }
+.res-item:last-child { border-bottom:none; }
+.res-item-info { flex:1; }
+.res-item-part { font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace; }
+.res-item-sub { font-size:11px;color:var(--text-muted);margin-top:2px; }
+.res-time { font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;white-space:nowrap; }
+.res-badge { display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace; }
+.res-badge.open   { background:rgba(248,81,73,.12);color:var(--red); }
+.res-badge.solved { background:rgba(63,185,80,.12);color:var(--green); }
+.res-tabs { display:flex;gap:4px;margin-bottom:12px; }
+.res-tab { padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-family:inherit;transition:all .2s; }
+.res-tab.active { background:var(--accent);border-color:var(--accent);color:#fff; }  
 </style>
 </head>
 <body>
@@ -516,6 +533,35 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
             </thead>
             <tbody id="tbl-recent"></tbody>
           </table>
+          <!-- RESOLUTION TIME WIDGET -->
+      <div class="card" style="margin-top:20px">
+        <div class="section-header">
+          <div class="section-title">⏱ Waktu Penyelesaian Masalah</div>
+          <span class="badge blue" id="res-stat-solved" style="font-size:13px">0</span>
+        </div>
+
+        <div class="resolution-grid">
+          <div class="res-stat-card">
+            <div class="res-stat-val red" id="res-stat-open">—</div>
+            <div class="res-stat-label">Item Masih Bermasalah</div>
+          </div>
+          <div class="res-stat-card">
+            <div class="res-stat-val green" id="res-stat-avg">—</div>
+            <div class="res-stat-label">Rata-rata Waktu Selesai</div>
+          </div>
+          <div class="res-stat-card">
+            <div class="res-stat-val cyan" id="res-stat-fastest">—</div>
+            <div class="res-stat-label">Tercepat Diselesaikan</div>
+          </div>
+        </div>
+
+        <div class="res-tabs">
+          <button class="res-tab active" id="res-tab-open"   onclick="switchResTab('open')">🔴 Sedang Berlangsung</button>
+          <button class="res-tab"        id="res-tab-solved" onclick="switchResTab('solved')">✅ Riwayat Solved</button>
+        </div>
+
+        <div id="res-list"></div>
+      </div>
         </div>
       </div>
     </div>
@@ -907,7 +953,11 @@ function saveUsers(u) { localStorage.setItem('ic_users', JSON.stringify(u)); }
 function getParts() {
   try { return JSON.parse(localStorage.getItem('ic_parts') || '[]'); } catch(e) { return []; }
 }
-function saveParts(p) { localStorage.setItem('ic_parts', JSON.stringify(p)); }
+function saveParts(newParts) {
+  var oldParts = getParts();
+  localStorage.setItem('ic_parts', JSON.stringify(newParts));
+  if (currentUser) checkResolutionOnSave(oldParts, newParts);
+}
 function getLogs() {
   try { return JSON.parse(localStorage.getItem('ic_logs') || '[]'); } catch(e) { return []; }
 }
@@ -1099,7 +1149,202 @@ function getUrgency(aging) {
   if (aging >= 1) return { level: 'medium',   label: 'MEDIUM',   color: 'var(--yellow)', cls: 'medium' };
   return           { level: 'low',            label: 'LOW',      color: 'var(--green)',  cls: 'low' };
 }
+// ════════════════════════════════════════
+//  RESOLUTION TIME
+// ════════════════════════════════════════
 
+// Format durasi ms → string "2j 15m" / "3h 5m" / "45m"
+function formatDuration(ms) {
+  if (ms < 0) ms = 0;
+  var totalMin = Math.floor(ms / 60000);
+  var days  = Math.floor(totalMin / 1440);
+  var hours = Math.floor((totalMin % 1440) / 60);
+  var mins  = totalMin % 60;
+  var parts = [];
+  if (days)  parts.push(days  + 'h');   // h = hari
+  if (hours) parts.push(hours + 'j');   // j = jam
+  parts.push(mins + 'm');
+  return parts.join(' ');
+}
+
+// Saat status berubah ke mismatch/neg, catat waktu mulai
+function recordIssueStart(partId) {
+  var key = 'res_start_' + partId;
+  if (!localStorage.getItem(key)) {
+    localStorage.setItem(key, Date.now().toString());
+  }
+}
+
+// Hapus timer start (saat solved)
+function clearIssueStart(partId) {
+  localStorage.removeItem('res_start_' + partId);
+}
+
+// Hitung durasi open (sedang berjalan)
+function getOpenDuration(partId) {
+  var start = localStorage.getItem('res_start_' + partId);
+  if (!start) return null;
+  return Date.now() - parseInt(start);
+}
+
+// Simpan riwayat resolved ke localStorage
+function getResolutionHistory() {
+  try { return JSON.parse(localStorage.getItem('ic_res_history') || '[]'); } catch(e) { return []; }
+}
+function saveResolutionHistory(h) { localStorage.setItem('ic_res_history', JSON.stringify(h)); }
+
+function recordResolved(part, durationMs, method) {
+  var history = getResolutionHistory();
+  var now = new Date();
+  history.unshift({
+    part: part,
+    durationMs: durationMs,
+    method: method, // 'auto' | 'manual'
+    resolvedAt: now.toLocaleString('id-ID', { dateStyle:'short', timeStyle:'short' }),
+    resolvedTs: Date.now()
+  });
+  if (history.length > 100) history.splice(100);
+  saveResolutionHistory(history);
+}
+
+// Dipanggil setiap kali saveParts() — cek perubahan status
+function checkResolutionOnSave(oldParts, newParts) {
+  var oldMap = {};
+  oldParts.forEach(function(p) { oldMap[p.id] = p; });
+
+  newParts.forEach(function(p) {
+    var oldP = oldMap[p.id];
+    if (!oldP) {
+      // Part baru — jika langsung bermasalah, start timer
+      if (getStatus(p) !== 'match') recordIssueStart(p.id);
+      return;
+    }
+    var wasOk  = getStatus(oldP) === 'match';
+    var isOk   = getStatus(p)   === 'match';
+
+    if (!wasOk && isOk) {
+      // Baru saja solved (auto — qty jadi sama)
+      var dur = getOpenDuration(p.id);
+      if (dur !== null) {
+        recordResolved(p.part, dur, 'auto');
+        clearIssueStart(p.id);
+        addLog('✅ Auto-Solved: ' + p.part + ' — waktu penyelesaian ' + formatDuration(dur), 'ok');
+      }
+    } else if (wasOk && !isOk) {
+      // Baru jadi bermasalah — start timer
+      recordIssueStart(p.id);
+      addLog('⚠ Issue detected: ' + p.part + ' — timer dimulai', 'warn');
+    } else if (!wasOk && !isOk) {
+      // Masih bermasalah — pastikan timer berjalan
+      recordIssueStart(p.id);
+    }
+  });
+}
+
+// Manual solve dari tombol di Overview
+function manualSolvePart(partId) {
+  var parts = getParts();
+  var idx = parts.findIndex(function(p) { return p.id === partId; });
+  if (idx < 0) return;
+  var p = parts[idx];
+  if (!confirm('Tandai part ' + p.part + ' sebagai SOLVED?\n\nSistem akan menyamakan Qty Portal E-WH → Qty Infor LN.\nPastikan data sudah diverifikasi secara manual.')) return;
+
+  var dur = getOpenDuration(p.id);
+  var oldPortal = p.portal;
+  parts[idx].portal = p.ln; // sejajarkan qty
+  var oldParts = getParts();
+  saveParts(parts);
+
+  if (dur !== null) {
+    recordResolved(p.part, dur, 'manual');
+    clearIssueStart(p.id);
+    addLog('✅ Manual Solved: ' + p.part + ' (Portal ' + oldPortal + '→' + p.ln + ') — waktu penyelesaian ' + formatDuration(dur), 'ok');
+  }
+  refreshAll();
+  renderResolutionWidget();
+}
+
+// ── RENDER WIDGET DI OVERVIEW ──
+var resActiveTab = 'open'; // 'open' | 'solved'
+
+function renderResolutionWidget() {
+  var parts = getParts();
+  var history = getResolutionHistory();
+
+  // Pastikan semua part bermasalah sudah ada timer-nya
+  parts.forEach(function(p) {
+    if (getStatus(p) !== 'match') recordIssueStart(p.id);
+  });
+
+  // Open issues
+  var openItems = parts.filter(function(p) { return getStatus(p) !== 'match'; });
+
+  // Stats
+  var avgMs = 0;
+  if (history.length) {
+    avgMs = history.reduce(function(s, h) { return s + h.durationMs; }, 0) / history.length;
+  }
+  var fastestMs = history.length ? Math.min.apply(null, history.map(function(h) { return h.durationMs; })) : 0;
+
+  document.getElementById('res-stat-open').textContent   = openItems.length;
+  document.getElementById('res-stat-solved').textContent = history.length;
+  document.getElementById('res-stat-avg').textContent    = history.length ? formatDuration(avgMs) : '—';
+  document.getElementById('res-stat-fastest').textContent= history.length ? formatDuration(fastestMs) : '—';
+
+  // Tab content
+  var listEl = document.getElementById('res-list');
+  if (resActiveTab === 'open') {
+    if (!openItems.length) {
+      listEl.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-icon">✅</div><div class="empty-text">Tidak ada item bermasalah</div></div>';
+    } else {
+      listEl.innerHTML = openItems.map(function(p) {
+        var dur = getOpenDuration(p.id);
+        var durStr = dur !== null ? formatDuration(dur) : '—';
+        var u = getUrgency(p.aging);
+        var diff = p.ln - p.portal;
+        var canSolve = currentUser && (currentUser.role === 'Supervisor IC' || currentUser.role === 'Staff IC');
+        return '<div class="res-item">' +
+          '<div class="res-item-info">' +
+            '<div class="res-item-part">' + p.part + '</div>' +
+            '<div class="res-item-sub">Selisih: ' + (diff > 0 ? '+' : '') + diff + ' · Aging: ' + p.aging + ' hari</div>' +
+          '</div>' +
+          '<span class="urg-pill ' + u.cls + '" style="font-size:10px">' + u.label + '</span>' +
+          '<div style="text-align:right">' +
+            '<div class="res-time" style="color:var(--red)">⏱ ' + durStr + '</div>' +
+            '<div style="font-size:10px;color:var(--text-muted)">belum selesai</div>' +
+          '</div>' +
+          (canSolve ? '<button class="btn-sm btn-success" style="padding:4px 10px;font-size:11px" onclick="manualSolvePart(' + p.id + ')">✓ Solve</button>' : '') +
+        '</div>';
+      }).join('');
+    }
+  } else {
+    // Solved history
+    if (!history.length) {
+      listEl.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-icon">📋</div><div class="empty-text">Belum ada item yang diselesaikan</div></div>';
+    } else {
+      listEl.innerHTML = history.slice(0, 10).map(function(h) {
+        return '<div class="res-item">' +
+          '<div class="res-item-info">' +
+            '<div class="res-item-part">' + h.part + '</div>' +
+            '<div class="res-item-sub">Diselesaikan: ' + h.resolvedAt + ' · Metode: ' + (h.method === 'auto' ? 'Otomatis' : 'Manual') + '</div>' +
+          '</div>' +
+          '<span class="res-badge solved">✓ SOLVED</span>' +
+          '<div style="text-align:right">' +
+            '<div class="res-time" style="color:var(--green)">⏱ ' + formatDuration(h.durationMs) + '</div>' +
+            '<div style="font-size:10px;color:var(--text-muted)">waktu selesai</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+}
+
+function switchResTab(tab) {
+  resActiveTab = tab;
+  document.getElementById('res-tab-open').classList.toggle('active', tab === 'open');
+  document.getElementById('res-tab-solved').classList.toggle('active', tab === 'solved');
+  renderResolutionWidget();
+}
 function urgencyPill(aging) {
   var u = getUrgency(aging);
   return '<span class="urg-pill ' + u.cls + '"><span class="urg-dot"></span>' + u.label + '</span>';
@@ -1780,7 +2025,7 @@ function defaultBarOpts(yLabel) {
 //  REFRESH
 // ════════════════════════════════════════
 function refreshKPI() { renderKPI(); renderOverviewCharts(); }
-function refreshAll() { renderKPI(); renderOverviewCharts(); }
+function refreshAll() { renderKPI(); renderOverviewCharts(); renderResolutionWidget(); }
 
 // ════════════════════════════════════════
 //  INIT
