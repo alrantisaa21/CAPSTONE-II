@@ -335,6 +335,44 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 /* ── PROGRESS BAR ── */
 .progress-bar { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+/* ── URGENCY ── */
+.urg-pill { display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace; }
+.urg-pill.critical { background:rgba(248,81,73,.15);color:var(--red); }
+.urg-pill.high     { background:rgba(210,153,34,.15);color:var(--orange); }
+.urg-pill.medium   { background:rgba(227,179,65,.15);color:var(--yellow); }
+.urg-pill.low      { background:rgba(63,185,80,.15);color:var(--green); }
+.urg-dot { width:5px;height:5px;border-radius:50%;background:currentColor; }
+
+.urg-summary-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px; }
+.urg-card { border-radius:10px;padding:14px 16px;border-left:3px solid; }
+.urg-card.critical { background:rgba(248,81,73,.08);border-color:var(--red); }
+.urg-card.high     { background:rgba(210,153,34,.08);border-color:var(--orange); }
+.urg-card.medium   { background:rgba(227,179,65,.08);border-color:var(--yellow); }
+.urg-card.low      { background:rgba(63,185,80,.08);border-color:var(--green); }
+.urg-card-label { font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-family:'IBM Plex Mono',monospace;margin-bottom:4px; }
+.urg-card.critical .urg-card-label { color:var(--red); }
+.urg-card.high     .urg-card-label { color:var(--orange); }
+.urg-card.medium   .urg-card-label { color:var(--yellow); }
+.urg-card.low      .urg-card-label { color:var(--green); }
+.urg-card-count { font-size:28px;font-weight:700;font-family:'IBM Plex Mono',monospace; }
+.urg-card.critical .urg-card-count { color:var(--red); }
+.urg-card.high     .urg-card-count { color:var(--orange); }
+.urg-card.medium   .urg-card-count { color:var(--yellow); }
+.urg-card.low      .urg-card-count { color:var(--green); }
+.urg-card-desc { font-size:11px;color:var(--text-muted);margin-top:4px; }
+
+.priority-list { display:flex;flex-direction:column;gap:8px;margin-bottom:20px; }
+.priority-item { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:14px; }
+.priority-rank { width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;flex-shrink:0; }
+.priority-rank.critical { background:rgba(248,81,73,.2);color:var(--red); }
+.priority-rank.high     { background:rgba(210,153,34,.2);color:var(--orange); }
+.priority-rank.medium   { background:rgba(227,179,65,.2);color:var(--yellow); }
+.priority-rank.low      { background:rgba(63,185,80,.2);color:var(--green); }
+.priority-info { flex:1; }
+.priority-part { font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace; }
+.priority-sub  { font-size:11px;color:var(--text-muted);margin-top:2px; }
+.priority-aging { font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700; }
+.aging-sub { font-size:10px;color:var(--text-muted);text-align:center; }  
 </style>
 </head>
 <body>
@@ -412,6 +450,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
     <div class="nav-tab" data-page="dn-handler" onclick="showPage('dn-handler', this)">🚨 DN Negatif</div>
     <div class="nav-tab" data-page="data" onclick="showPage('data', this)">🗃️ Data Part</div>
     <div class="nav-tab" data-page="log" onclick="showPage('log', this)">📋 Log Aktivitas</div>
+    <div class="nav-tab" data-page="urgency" onclick="showPage('urgency', this)">🔴 Urgency</div>
     <div class="nav-tab" id="admin-tab" data-page="admin" style="display:none" onclick="showPage('admin', this)">⚙️ Admin</div>
   </div>
 
@@ -755,7 +794,45 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
     </div>
   </div>
 </div>
+<!-- ══════════════ PAGE: URGENCY ══════════════ -->
+<div class="page" id="page-urgency">
+  <div class="section-header" style="margin-bottom:16px">
+    <div class="section-title">Klasifikasi Urgency Berdasarkan Aging</div>
+    <span class="badge yellow" id="urg-total-badge">0 item perlu perhatian</span>
+  </div>
 
+  <!-- Summary Cards -->
+  <div class="urg-summary-grid" id="urg-summary-grid"></div>
+
+  <!-- Priority List -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">🔺 Top Priority Items</div>
+    <div class="card-sub">Diurutkan otomatis: Aging tertinggi · Selisih terbesar</div>
+    <div class="priority-list" id="priority-list"></div>
+  </div>
+
+  <!-- Full Table with Urgency column -->
+  <div class="card">
+    <div class="card-title">📋 Semua Part — Dengan Klasifikasi Urgency</div>
+    <div class="card-sub">Sortir otomatis: Critical → High → Medium → Low</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Part Number</th>
+            <th>Qty Infor LN</th>
+            <th>Qty Portal E-WH</th>
+            <th>Selisih</th>
+            <th>Aging (Hari)</th>
+            <th>Status</th>
+            <th>Urgency</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-urgency"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
     <!-- ══════════════ PAGE: LOG ══════════════ -->
     <div class="page" id="page-log">
       <div class="card">
@@ -1002,6 +1079,7 @@ function showPage(name, tabEl) {
   if (name === 'dn-handler') renderDnHandler();
   if (name === 'admin') renderAdminTable();
   if (name === 'log') renderLog();
+  if (name === 'urgency') renderUrgencyPage();
 }
 
 // ════════════════════════════════════════
@@ -1012,6 +1090,20 @@ function getStatus(p) {
   if (p.ln !== p.portal) return 'mismatch';
   return 'match';
 }
+// ════════════════════════════════════════
+//  URGENCY CLASSIFICATION
+// ════════════════════════════════════════
+function getUrgency(aging) {
+  if (aging > 7)  return { level: 'critical', label: 'CRITICAL', color: 'var(--red)',    cls: 'critical' };
+  if (aging >= 4) return { level: 'high',     label: 'HIGH',     color: 'var(--orange)', cls: 'high' };
+  if (aging >= 1) return { level: 'medium',   label: 'MEDIUM',   color: 'var(--yellow)', cls: 'medium' };
+  return           { level: 'low',            label: 'LOW',      color: 'var(--green)',  cls: 'low' };
+}
+
+function urgencyPill(aging) {
+  var u = getUrgency(aging);
+  return '<span class="urg-pill ' + u.cls + '"><span class="urg-dot"></span>' + u.label + '</span>';
+}  
 function statusLabel(s) {
   if (s === 'mismatch') return '<span class="status-pill mismatch"><span class="status-dot"></span>Mismatch</span>';
   if (s === 'neg') return '<span class="status-pill neg"><span class="status-dot"></span>DN Negatif</span>';
@@ -1329,7 +1421,88 @@ function renderDnHandler() {
   }).join('');
   renderDnLog();
 }
+// ════════════════════════════════════════
+//  URGENCY PAGE
+// ════════════════════════════════════════
+function renderUrgencyPage() {
+  var parts = getParts();
+  var urgOrder = { critical: 0, high: 1, medium: 2, low: 3 };
 
+  // Sort: urgency level dulu, lalu aging descending, lalu selisih absolut descending
+  var sorted = parts.slice().sort(function(a, b) {
+    var ua = getUrgency(a.aging), ub = getUrgency(b.aging);
+    if (urgOrder[ua.level] !== urgOrder[ub.level]) return urgOrder[ua.level] - urgOrder[ub.level];
+    if (b.aging !== a.aging) return b.aging - a.aging;
+    return Math.abs(b.ln - b.portal) - Math.abs(a.ln - a.portal);
+  });
+
+  // Summary counts
+  var counts = { critical: 0, high: 0, medium: 0, low: 0 };
+  parts.forEach(function(p) { counts[getUrgency(p.aging).level]++; });
+
+  var needAttention = counts.critical + counts.high + counts.medium;
+  document.getElementById('urg-total-badge').textContent = needAttention + ' item perlu perhatian';
+
+  document.getElementById('urg-summary-grid').innerHTML = [
+    { cls: 'critical', icon: '🔴', label: 'Critical', desc: 'Aging > 7 hari', key: 'critical' },
+    { cls: 'high',     icon: '🟠', label: 'High',     desc: 'Aging 4–7 hari', key: 'high' },
+    { cls: 'medium',   icon: '🟡', label: 'Medium',   desc: 'Aging 1–3 hari', key: 'medium' },
+    { cls: 'low',      icon: '🟢', label: 'Low',      desc: 'Aging 0 hari',   key: 'low' },
+  ].map(function(c) {
+    return '<div class="urg-card ' + c.cls + '">' +
+      '<div class="urg-card-label">' + c.icon + ' ' + c.label + '</div>' +
+      '<div class="urg-card-count">' + counts[c.key] + '</div>' +
+      '<div class="urg-card-desc">' + c.desc + '</div>' +
+    '</div>';
+  }).join('');
+
+  // Top priority list (non-match atau aging > 0, max 5)
+  var topItems = sorted.filter(function(p) {
+    return getStatus(p) !== 'match' || p.aging > 0;
+  }).slice(0, 5);
+
+  var maxAging = topItems.reduce(function(m, p) { return Math.max(m, p.aging); }, 1) || 1;
+
+  document.getElementById('priority-list').innerHTML = topItems.length
+    ? topItems.map(function(p, i) {
+        var u = getUrgency(p.aging);
+        var diff = p.ln - p.portal;
+        var pct = Math.round((p.aging / maxAging) * 100);
+        return '<div class="priority-item">' +
+          '<div class="priority-rank ' + u.cls + '">' + (i + 1) + '</div>' +
+          '<div class="priority-info">' +
+            '<div class="priority-part">' + p.part + '</div>' +
+            '<div class="priority-sub">' + statusLabel(getStatus(p)).replace(/<[^>]+>/g, '') +
+              ' · Selisih: ' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</div>' +
+            '<div class="progress-bar" style="margin-top:6px">' +
+              '<div class="progress-fill" style="width:' + pct + '%;background:' + u.color + '"></div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="text-align:center;min-width:48px">' +
+            '<div class="priority-aging" style="color:' + u.color + '">' + p.aging + '</div>' +
+            '<div class="aging-sub">hari</div>' +
+          '</div>' +
+          '<div>' + urgencyPill(p.aging) + '</div>' +
+        '</div>';
+      }).join('')
+    : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Semua item dalam kondisi baik</div></div>';
+
+  // Full urgency table
+  document.getElementById('tbl-urgency').innerHTML = sorted.map(function(p) {
+    var s = getStatus(p);
+    var diff = p.ln - p.portal;
+    var u = getUrgency(p.aging);
+    return '<tr>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;font-size:12px">' + p.part + '</td>' +
+      '<td>' + p.ln.toLocaleString() + '</td>' +
+      '<td>' + p.portal.toLocaleString() + '</td>' +
+      '<td style="font-family:\'IBM Plex Mono\',monospace;color:' + (diff < 0 ? 'var(--red)' : diff > 0 ? 'var(--orange)' : 'var(--green)') + '">' + (diff > 0 ? '+' : '') + diff.toLocaleString() + '</td>' +
+      '<td style="color:' + u.color + ';font-family:\'IBM Plex Mono\',monospace;font-weight:600">' + p.aging + '</td>' +
+      '<td>' + statusLabel(s) + '</td>' +
+      '<td>' + urgencyPill(p.aging) + '</td>' +
+    '</tr>';
+  }).join('');
+}
 function escalateDn(id) {
   var parts = getParts();
   var p = null;
