@@ -1659,7 +1659,9 @@ function renderDnHandler() {
       '<div class="dn-item-actions">' +
         (resolved
           ? '<span class="resolved-badge">✓ Resolved</span>'
-          : '<button class="btn-sm btn-danger" onclick="escalateDn(' + p.id + ')">⚡ Eskalasi</button>' +
+          : (currentUser && currentUser.role !== 'Supervisor IC'
+              ? '<button class="btn-sm btn-danger" onclick="escalateDn(' + p.id + ')">⚡ Eskalasi</button>'
+              : '') +
             '<button class="btn-sm btn-success" onclick="resolveDn(' + p.id + ')">✓ Resolve</button>') +
       '</div>' +
     '</div>';
